@@ -6,7 +6,7 @@ An autonomous AI agent that does buy-side due diligence on a public company. It 
 uv run equity-research NVDA
 ```
 
-**Sample output:** [NVIDIA memo](sample_reports/NVDA_memo_2026-10-03.pdf) · [Microsoft memo](sample_reports/MSFT_memo_2026-10-03.pdf)
+**[▶ Live demo](https://renzo-equity-research.streamlit.app/)** · **Sample output:** [NVIDIA memo](sample_reports/NVDA_memo_2026-10-03.pdf) · [Microsoft memo](sample_reports/MSFT_memo_2026-10-03.pdf)
 
 Built with **Claude** (tool use, web search), **SEC EDGAR** and **Yahoo Finance**. All data sources are free. A full memo costs about **$0.40–0.50** in API usage, and a hard spending cap limits every run.
 
