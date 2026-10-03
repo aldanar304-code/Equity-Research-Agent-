@@ -50,6 +50,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-cost", type=float, help="Spending cap in USD for this memo (default: 1.50)")
     parser.add_argument("--deep", action="store_true",
                         help="Highest quality: Claude Opus 5.5, high effort, $3 cap (about 2-3x the cost)")
+    parser.add_argument("--spanish", action="store_true",
+                        help="Also write a Spanish version of the memo (about $0.10 extra)")
     parser.add_argument("--no-fact-check", action="store_true", help="Skip the fact-check pass")
     parser.add_argument("--out", type=Path, default=Path("reports"), help="Output folder (default: reports/)")
     args = parser.parse_args(argv)
@@ -88,6 +90,12 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     path = save_report(result, args.out)
+    if args.spanish:
+        from .translate import translate_file
+        try:
+            translate_file(path, log=lambda m: print(m, file=sys.stderr))
+        except Exception as exc:
+            print(f"Spanish translation failed: {exc}", file=sys.stderr)
     print(f"\nDone. Memo saved to {path.with_suffix('.html')} (+ .md/.pdf)  |  cost ${result.cost_usd:.3f}  |  "
           f"{len(result.tool_calls)} tool calls", file=sys.stderr)
     return 0

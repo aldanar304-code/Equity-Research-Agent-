@@ -21,6 +21,7 @@ dev = [
 
 [project.scripts]
 equity-research = "equity_agent.cli:main"
+equity-research-translate = "equity_agent.translate:main"
 
 [build-system]
 requires = ["hatchling"]

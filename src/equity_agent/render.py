@@ -36,6 +36,36 @@ plt.rcParams.update({
 })
 
 
+_LANG = "en"
+_ES = {
+    "Revenue ($B)": "Ingresos (miles de M$)", "Operating margin": "Margen operativo",
+    "Operating margin (%)": "Margen operativo (%)", "Revenue and operating margin": "Ingresos y margen operativo",
+    "Source: SEC XBRL (10-K as reported).": "Fuente: SEC XBRL (10-K, cifras publicadas).",
+    "Net income": "Beneficio neto", "Free cash flow": "Flujo de caja libre", "$B": "miles de M$",
+    "Cash conversion: free cash flow vs net income": "Conversión en caja: flujo de caja libre vs beneficio neto",
+    "Free cash flow = operating cash flow - capital expenditure. Source: SEC XBRL.":
+        "Flujo de caja libre = flujo de caja operativo - inversiones en capital (capex). Fuente: SEC XBRL.",
+    "Indexed (start = 100)": "Base 100 al inicio", "Two-year total return vs the S&P 500":
+        "Rentabilidad total a dos años vs el S&P 500",
+    "Source: Yahoo Finance, dividend-adjusted.": "Fuente: Yahoo Finance, ajustado por dividendos.",
+    "Forward P/E (x)": "PER estimado (x)", "Peers chosen by the agent. Source: Yahoo Finance.":
+        "Comparables elegidos por el agente. Fuente: Yahoo Finance.",
+    "Bear": "Pesimista", "Base": "Base", "Bull": "Optimista", "price": "precio",
+    "Value per share ($)": "Valor por acción ($)", "DCF value per share by scenario": "Valor DCF por acción según escenario",
+    "Values recomputed from the agent's DCF inputs.": "Valores recalculados a partir de los supuestos DCF del agente.",
+    "Terminal growth": "Crecimiento a perpetuidad", "Discount rate": "Tasa de descuento",
+    "Base-case DCF sensitivity (value per share)": "Sensibilidad del DCF, escenario base (valor por acción)",
+    "Green = above the current price, red = below. Centre cell is the base case.":
+        "Verde = por encima del precio actual, rojo = por debajo. La celda central es el escenario base.",
+    "AI Equity Research Agent &middot; Investment memo": "Agente de análisis bursátil con IA &middot; Informe de inversión",
+    "Generated": "Generado",
+}
+
+
+def T(text: str) -> str:
+    return _ES.get(text, text) if _LANG == "es" else text
+
+
 def _svg(fig) -> str:
     buf = io.StringIO()
     fig.savefig(buf, format="svg", bbox_inches="tight")
@@ -59,18 +89,18 @@ def chart_revenue_margin(hist: dict) -> str | None:
         return None
     labels = [f"FY{y[2:4]}" if y[5:7] != "12" else y[:4] for y in years]
     fig, ax = plt.subplots(figsize=(6.4, 2.8))
-    ax.bar(labels, [rev[y] / 1e9 for y in years], color=LIGHT_BLUE, label="Revenue ($B)")
-    ax.set_ylabel("Revenue ($B)")
+    ax.bar(labels, [rev[y] / 1e9 for y in years], color=LIGHT_BLUE, label=T("Revenue ($B)"))
+    ax.set_ylabel(T("Revenue ($B)"))
     ax2 = ax.twinx()
-    ax2.plot(labels, [op[y] / rev[y] * 100 for y in years], color=BLUE, marker="o", lw=2, label="Operating margin")
-    ax2.set_ylabel("Operating margin (%)")
+    ax2.plot(labels, [op[y] / rev[y] * 100 for y in years], color=BLUE, marker="o", lw=2, label=T("Operating margin"))
+    ax2.set_ylabel(T("Operating margin (%)"))
     ax2.grid(False)
     ax2.spines["right"].set_visible(True)
-    ax.set_title("Revenue and operating margin")
+    ax.set_title(T("Revenue and operating margin"))
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
     ax.legend(h1 + h2, l1 + l2, frameon=False, loc="upper left", fontsize=8)
-    return _figure(_svg(fig), "Source: SEC XBRL (10-K as reported).")
+    return _figure(_svg(fig), T("Source: SEC XBRL (10-K as reported)."))
 
 
 def chart_cash_vs_earnings(hist: dict) -> str | None:
@@ -81,13 +111,13 @@ def chart_cash_vs_earnings(hist: dict) -> str | None:
     labels = [f"FY{y[2:4]}" if y[5:7] != "12" else y[:4] for y in years]
     x = range(len(years))
     fig, ax = plt.subplots(figsize=(6.4, 2.6))
-    ax.bar([i - 0.2 for i in x], [ni[y] / 1e9 for y in years], 0.4, color=MUTED, label="Net income")
-    ax.bar([i + 0.2 for i in x], [fcf[y] / 1e9 for y in years], 0.4, color=GREEN, label="Free cash flow")
+    ax.bar([i - 0.2 for i in x], [ni[y] / 1e9 for y in years], 0.4, color=MUTED, label=T("Net income"))
+    ax.bar([i + 0.2 for i in x], [fcf[y] / 1e9 for y in years], 0.4, color=GREEN, label=T("Free cash flow"))
     ax.set_xticks(list(x), labels)
-    ax.set_ylabel("$B")
-    ax.set_title("Cash conversion: free cash flow vs net income")
+    ax.set_ylabel(T("$B"))
+    ax.set_title(T("Cash conversion: free cash flow vs net income"))
     ax.legend(frameon=False, loc="upper left", fontsize=8)
-    return _figure(_svg(fig), "Free cash flow = operating cash flow - capital expenditure. Source: SEC XBRL.")
+    return _figure(_svg(fig), T("Free cash flow = operating cash flow - capital expenditure. Source: SEC XBRL."))
 
 
 def chart_price_vs_market(ticker: str) -> str | None:
@@ -103,10 +133,10 @@ def chart_price_vs_market(ticker: str) -> str | None:
     ax.plot(rebased.index, rebased[ticker], color=BLUE, lw=1.8, label=ticker)
     ax.plot(rebased.index, rebased["SPY"], color=MUTED, lw=1.4, label="S&P 500 (SPY)")
     ax.axhline(100, color=GRID, lw=1)
-    ax.set_ylabel("Indexed (start = 100)")
-    ax.set_title("Two-year total return vs the S&P 500")
+    ax.set_ylabel(T("Indexed (start = 100)"))
+    ax.set_title(T("Two-year total return vs the S&P 500"))
     ax.legend(frameon=False, loc="upper left", fontsize=8)
-    return _figure(_svg(fig), "Source: Yahoo Finance, dividend-adjusted.")
+    return _figure(_svg(fig), T("Source: Yahoo Finance, dividend-adjusted."))
 
 
 def chart_peers(tickers: list[str], focus: str) -> str | None:
@@ -125,15 +155,15 @@ def chart_peers(tickers: list[str], focus: str) -> str | None:
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(6.4, 0.45 * len(rows) + 1.0), sharey=True)
     colors = [BLUE if r[0] == focus.upper() else LIGHT_BLUE for r in rows]
     a1.barh([r[0] for r in rows], [r[1] for r in rows], color=colors)
-    a1.set_title("Forward P/E (x)")
+    a1.set_title(T("Forward P/E (x)"))
     a2.barh([r[0] for r in rows], [r[2] for r in rows], color=colors)
-    a2.set_title("Operating margin (%)")
+    a2.set_title(T("Operating margin (%)"))
     for ax, idx, fmt in ((a1, 1, "{:.1f}"), (a2, 2, "{:.0f}%")):
         ax.grid(axis="y", visible=False)
         for i, r in enumerate(rows):
             ax.text(r[idx], i, " " + fmt.format(r[idx]), va="center", fontsize=8, color=INK)
     fig.tight_layout()
-    return _figure(_svg(fig), "Peers chosen by the agent. Source: Yahoo Finance.")
+    return _figure(_svg(fig), T("Peers chosen by the agent. Source: Yahoo Finance."))
 
 
 def chart_scenarios(dcf_calls: list[dict], price: float | None) -> str | None:
@@ -151,17 +181,17 @@ def chart_scenarios(dcf_calls: list[dict], price: float | None) -> str | None:
         return None
     fig, ax = plt.subplots(figsize=(6.4, 2.4))
     colors = [{"Bear": RED, "Base": BLUE, "Bull": GREEN}.get(k, MUTED) for k, _ in vals]
-    ax.bar([k for k, _ in vals], [v for _, v in vals], color=colors, width=0.55)
+    ax.bar([T(k) for k, _ in vals], [v for _, v in vals], color=colors, width=0.55)
     for i, (_, v) in enumerate(vals):
         label = f"${v:,.0f}" + (f"\n({v / price - 1:+.0%})" if price else "")
         ax.text(i, v, label, ha="center", va="bottom", fontsize=8, color=INK)
     if price:
         ax.axhline(price, color=AMBER, lw=1.5, ls="--")
-        ax.text(len(vals) - 0.5, price, f"  price ${price:,.0f}", color=AMBER, va="bottom", fontsize=8)
-    ax.set_ylabel("Value per share ($)")
-    ax.set_title("DCF value per share by scenario")
+        ax.text(len(vals) - 0.5, price, f"  {T('price')} ${price:,.0f}", color=AMBER, va="bottom", fontsize=8)
+    ax.set_ylabel(T("Value per share ($)"))
+    ax.set_title(T("DCF value per share by scenario"))
     ax.margins(y=0.25)
-    return _figure(_svg(fig), "Values recomputed from the agent's DCF inputs.")
+    return _figure(_svg(fig), T("Values recomputed from the agent's DCF inputs."))
 
 
 def chart_sensitivity(base: dict, price: float | None) -> str | None:
@@ -176,23 +206,25 @@ def chart_sensitivity(base: dict, price: float | None) -> str | None:
     fig, ax = plt.subplots(figsize=(6.4, 2.8))
     if price:
         import matplotlib.colors as mcolors
-        norm = mcolors.TwoSlopeNorm(vcenter=price, vmin=min(min(r) for r in grid) - 1, vmax=max(max(r) for r in grid) + 1)
+        finite = [v for r in grid for v in r if not math.isnan(v)]
+        # Keep the price inside the colour range even when every cell is above (or below) it.
+        norm = mcolors.TwoSlopeNorm(vcenter=price, vmin=min(finite + [price]) - 1, vmax=max(finite + [price]) + 1)
         im = ax.imshow(grid, cmap="RdYlGn", norm=norm, aspect="auto")
     else:
         im = ax.imshow(grid, cmap="Blues", aspect="auto")
     ax.set_xticks(range(len(tgs)), [f"{t:.1%}" for t in tgs])
     ax.set_yticks(range(len(drs)), [f"{d:.1%}" for d in drs])
-    ax.set_xlabel("Terminal growth")
-    ax.set_ylabel("Discount rate")
+    ax.set_xlabel(T("Terminal growth"))
+    ax.set_ylabel(T("Discount rate"))
     ax.grid(False)
     for i, row in enumerate(grid):
         for j, v in enumerate(row):
             dark = price and not math.isnan(v) and abs(v / price - 1) > 0.25  # saturated cells
             ax.text(j, i, "n/a" if math.isnan(v) else f"${v:,.0f}", ha="center", va="center", fontsize=8,
                     color="white" if dark else INK, fontweight="bold" if (i, j) == (2, 2) else "normal")
-    ax.set_title("Base-case DCF sensitivity (value per share)")
+    ax.set_title(T("Base-case DCF sensitivity (value per share)"))
     del im
-    return _figure(_svg(fig), "Green = above the current price, red = below. Centre cell is the base case.")
+    return _figure(_svg(fig), T("Green = above the current price, red = below. Centre cell is the base case."))
 
 
 # ---------------------------------------------------------------------------
@@ -251,7 +283,7 @@ def _kpis(header_line: str) -> tuple[str, str]:
         return "", header_line
     cards = []
     for k, v in pairs:
-        cls = "kpi rec" if k.lower().startswith("recommendation") or k.lower() == "stance" else "kpi"
+        cls = "kpi rec" if k.lower().startswith(("recommendation", "recomendación")) or k.lower() == "stance" else "kpi"
         cards.append(f'<div class="{cls}"><div class="label">{escape(k)}</div>'
                      f'<div class="value">{escape(v.strip())}</div></div>')
     return f'<div class="kpis">{"".join(cards)}</div>', ""
@@ -264,12 +296,12 @@ def _insert(sections: dict[str, list[str]], md: str) -> str:
     for i, line in enumerate(lines):
         m = re.match(r"^##\s+(\d+)\.", line)
         if line.startswith("## ") and current and sections.get(current):
-            out += ["", *sections.pop(current), ""]
+            out += [x for fig in sections.pop(current) for x in ("", fig)] + [""]
         if line.startswith("## "):
             current = m.group(1) if m else None
         out.append(line)
     if current and sections.get(current):
-        out += ["", *sections.pop(current), ""]
+        out += [x for fig in sections.pop(current) for x in ("", fig)] + [""]
     return "\n".join(out)
 
 
@@ -277,6 +309,8 @@ def _fix_lists(md: str) -> str:
     """Python-Markdown needs a blank line before a list; LLM output often omits it."""
     out = []
     for line in md.splitlines():
+        # Nested list items indented by 1-3 spaces need 4 for Python-Markdown to nest them.
+        line = re.sub(r"^ {1,3}(?=(?:[-*+]|\d+\.)\s)", "    ", line)
         is_item = re.match(r"^\s*(?:[-*+]|\d+\.)\s+", line)
         if is_item and out and out[-1].strip() and not re.match(r"^\s*(?:[-*+]|\d+\.)\s+", out[-1]) \
                 and not out[-1].lstrip().startswith("|"):
@@ -305,14 +339,17 @@ def header_fields(memo_md: str) -> dict:
     def grab(label):
         m = re.search(rf"\*\*{label}:\*\*\s*([^|\n]+)", memo_md)
         return m.group(1).strip() if m else None
-    return {"recommendation": grab("Recommendation"), "target": grab("12-month target"),
-            "price": grab("Price"), "date": grab("Date")}
+    return {"recommendation": grab("Recommendation") or grab("Recomendación"),
+            "target": grab("12-month target") or grab("Precio objetivo a 12 meses"),
+            "price": grab("Price") or grab("Precio"), "date": grab("Date") or grab("Fecha")}
 
 
 def previous_recommendations(ticker: str, folder: Path, exclude: Path | None = None) -> list[dict]:
     """Earlier memos on the same company in the output folder (for the 12-month history disclosure)."""
     out = []
     for md in sorted(folder.glob(f"{ticker.upper()}_memo_*.md")):
+        if md.stem.endswith("_es"):
+            continue
         if exclude and md.resolve() == exclude.resolve():
             continue
         fields = header_fields(md.read_text())
@@ -321,69 +358,132 @@ def previous_recommendations(ticker: str, folder: Path, exclude: Path | None = N
     return out
 
 
-def _position_text(ticker: str, cfg: dict) -> str:
-    author = cfg.get("author", "The author")
-    if ticker in [t.upper() for t in cfg.get("holdings", [])]:
+def _position_text(ticker: str, cfg: dict, lang: str = "en") -> str:
+    author = cfg.get("author", "The author" if lang == "en" else "El autor")
+    long_ = ticker in [t.upper() for t in cfg.get("holdings", [])]
+    short = ticker in [t.upper() for t in cfg.get("short_positions", [])]
+    if lang == "es":
+        if long_:
+            return (f"{author} mantiene una posición larga en acciones de {ticker} en el momento de la publicación. "
+                    "El informe fue generado por un agente de IA que no tenía información ni instrucciones sobre "
+                    "las posiciones del autor.")
+        if short:
+            return f"{author} mantiene una posición corta en {ticker} en el momento de la publicación."
+        return f"{author} no mantiene ninguna posición en {ticker} en el momento de la publicación."
+    if long_:
         return (f"{author} holds a long position in {ticker} shares at the time of publication. "
                 "The memo was generated by an AI agent that had no information about, and no instructions "
                 "relating to, the author's holdings.")
-    if ticker in [t.upper() for t in cfg.get("short_positions", [])]:
+    if short:
         return f"{author} holds a short position in {ticker} at the time of publication."
     return f"{author} holds no position in {ticker} at the time of publication."
 
 
+_MONTHS_ES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
+              "octubre", "noviembre", "diciembre"]
+
+
 def disclosures_html(ticker: str, memo_md: str, generated_at, previous: list[dict] | None = None,
-                     cfg: dict | None = None) -> tuple[str, str]:
+                     cfg: dict | None = None, lang: str = "en") -> tuple[str, str]:
     """Returns (short banner under the header, full disclosure section)."""
     cfg = cfg if cfg is not None else load_disclosure_settings()
+    es = lang == "es"
     f = header_fields(memo_md)
-    author = escape(cfg.get("author", "the author"))
+    author = escape(cfg.get("author", "el autor" if es else "the author"))
+    location = f"({escape(cfg['location'])})" if cfg.get("location") else ""
     holds = ticker in [t.upper() for t in cfg.get("holdings", []) + cfg.get("short_positions", [])]
-    banner = ('<div class="notice">AI-generated research &middot; not a personal recommendation or '
-              'investment advice' + (f' &middot; <strong>the author holds {escape(ticker)} shares</strong>' if holds else "")
-              + ' &middot; <a href="#disclosures">see disclosures</a></div>')
+    link = cfg.get("project_url")
+    t = escape(ticker)
+    na = "n/d" if es else "n/a"
+    price, rec, target = (escape(f.get(k) or na) for k in ("price", "recommendation", "target"))
+
+    if es:
+        banner = ('<div class="notice">Análisis generado por IA y traducido automáticamente del original en inglés '
+                  '&middot; no es una recomendación personalizada ni asesoramiento de inversión'
+                  + (f' &middot; <strong>el autor tiene acciones de {t}</strong>' if holds else "")
+                  + ' &middot; <a href="#disclosures">ver información legal</a></div>')
+        when = f"{generated_at.day} de {_MONTHS_ES[generated_at.month - 1]} de {generated_at.year}, {generated_at:%H:%M}"
+    else:
+        banner = ('<div class="notice">AI-generated research &middot; not a personal recommendation or '
+                  'investment advice' + (f' &middot; <strong>the author holds {t} shares</strong>' if holds else "")
+                  + ' &middot; <a href="#disclosures">see disclosures</a></div>')
+        when = f"{generated_at:%d %B %Y, %H:%M}"
 
     prev = previous or []
     if prev:
-        rows = "".join(f"<tr><td>{escape(p.get('date') or p['file'])}</td><td>{escape(p.get('recommendation') or 'n/a')}</td>"
-                       f"<td>{escape(p.get('target') or 'n/a')}</td><td>{escape(p.get('price') or 'n/a')}</td></tr>" for p in prev)
-        history = ("<table><tr><th>Date</th><th>Recommendation</th><th>12-month target</th><th>Price at the time</th></tr>"
-                   f"{rows}</table>")
+        head = (("Fecha", "Recomendación", "Precio objetivo a 12 meses", "Precio en ese momento") if es
+                else ("Date", "Recommendation", "12-month target", "Price at the time"))
+        rows = "".join(f"<tr><td>{escape(p.get('date') or p['file'])}</td><td>{escape(p.get('recommendation') or na)}</td>"
+                       f"<td>{escape(p.get('target') or na)}</td><td>{escape(p.get('price') or na)}</td></tr>" for p in prev)
+        history = "<table><tr>" + "".join(f"<th>{h}</th>" for h in head) + f"</tr>{rows}</table>"
     else:
-        history = f"<p>No previous recommendations on {escape(ticker)} have been published by this project.</p>"
+        history = (f"<p>Este proyecto no ha publicado recomendaciones anteriores sobre {t}.</p>" if es
+                   else f"<p>No previous recommendations on {t} have been published by this project.</p>")
 
-    link = cfg.get("project_url")
-    section = f"""
-<section id="disclosures" class="disclosures">
-<h2>Disclosures</h2>
-<dl>
-<dt>Producer</dt><dd>Generated by an AI research agent (Anthropic Claude) built and published by {author}
-{('(' + escape(cfg['location']) + ')') if cfg.get('location') else ''}, an individual, not an authorised investment firm.
-{f'How the agent works: <a href="{escape(link)}">{escape(link)}</a>.' if link else ''}</dd>
-<dt>Date and price</dt><dd>Produced {generated_at:%d %B %Y, %H:%M} (local time). Price used: {escape(f.get('price') or 'n/a')}.
-Prices and data may have changed since.</dd>
-<dt>Recommendation</dt><dd>{escape(f.get('recommendation') or 'n/a')}, 12-month target {escape(f.get('target') or 'n/a')}.
-Buy = expected to outperform its current price materially over 12 months; Hold = roughly in line;
-Sell = expected to fall materially. The target is an estimate, not a forecast or guarantee.</dd>
-<dt>Methodology</dt><dd>Discounted cash flow (bear / base / bull scenarios with a sensitivity analysis), peer
-valuation multiples and analyst consensus, based on the company's SEC filings, Yahoo Finance data and web sources
-cited in the memo. Estimates and opinions are labelled as such. An automated fact-check pass reviewed the draft;
-errors may remain.</dd>
-<dt>Conflicts of interest</dt><dd>{escape(_position_text(ticker, cfg))} The author receives no payment from
-{escape(ticker)} or any other party for this memo.</dd>
-<dt>Previous recommendations</dt><dd>{history}</dd>
-<dt>Not investment advice</dt><dd>This is general, impersonal research for educational purposes. It is not
-investment advice or a personal recommendation within the meaning of MiFID II, and it does not take into account
-any reader's objectives, financial situation or risk tolerance. Do your own research, and consult an investment
-firm authorised by the CNMV (or your local regulator) before making investment decisions.
-Investing involves risk, including the loss of capital.</dd>
-</dl>
-</section>"""
+    position = escape(_position_text(ticker, cfg, lang))
+    if es:
+        how = f'Cómo funciona el agente: <a href="{escape(link)}">{escape(link)}</a>.' if link else ""
+        items = [
+            ("Autor", f"Generado por un agente de análisis con IA (Anthropic Claude) creado y publicado por {author} "
+                      f"{location}, una persona física, no una empresa de servicios de inversión autorizada. {how} "
+                      "Esta versión en español es una traducción automática del informe original en inglés; en caso "
+                      "de discrepancia prevalece el original."),
+            ("Fecha y precio", f"Elaborado el {when} (hora local). Precio utilizado: {price}. Los precios y datos "
+                               "pueden haber cambiado desde entonces."),
+            ("Recomendación", f"{rec}, precio objetivo a 12 meses {target}. Comprar = se espera que supere de forma "
+                              "significativa su precio actual en 12 meses; Mantener = aproximadamente en línea; Vender = "
+                              "se espera una caída significativa. El precio objetivo es una estimación, no una previsión "
+                              "ni una garantía."),
+            ("Metodología", "Descuento de flujos de caja (escenarios pesimista, base y optimista con análisis de "
+                            "sensibilidad), múltiplos de valoración de comparables y consenso de analistas, a partir de "
+                            "los informes de la compañía ante la SEC, datos de Yahoo Finance y las fuentes web citadas. "
+                            "Las estimaciones y opiniones se identifican como tales. Una revisión automática verificó el "
+                            "borrador; pueden quedar errores."),
+            ("Conflictos de interés", f"{position} El autor no recibe ningún pago de {t} ni de ningún tercero por "
+                                      "este informe."),
+            ("Recomendaciones anteriores", history),
+            ("No es asesoramiento de inversión", "Este documento es un análisis general e impersonal con fines "
+                "educativos. No constituye asesoramiento en materia de inversión ni una recomendación personalizada en "
+                "el sentido de MiFID II, y no tiene en cuenta los objetivos, la situación financiera ni la tolerancia al "
+                "riesgo de ningún lector. Realice su propio análisis y consulte a una entidad autorizada por la CNMV "
+                "antes de tomar decisiones de inversión. Invertir conlleva riesgos, incluida la pérdida del capital "
+                "invertido."),
+        ]
+        title = "Información legal"
+    else:
+        how = f'How the agent works: <a href="{escape(link)}">{escape(link)}</a>.' if link else ""
+        items = [
+            ("Producer", f"Generated by an AI research agent (Anthropic Claude) built and published by {author} "
+                         f"{location}, an individual, not an authorised investment firm. {how}"),
+            ("Date and price", f"Produced {when} (local time). Price used: {price}. Prices and data may have "
+                               "changed since."),
+            ("Recommendation", f"{rec}, 12-month target {target}. Buy = expected to outperform its current price "
+                               "materially over 12 months; Hold = roughly in line; Sell = expected to fall materially. "
+                               "The target is an estimate, not a forecast or guarantee."),
+            ("Methodology", "Discounted cash flow (bear / base / bull scenarios with a sensitivity analysis), peer "
+                            "valuation multiples and analyst consensus, based on the company's SEC filings, Yahoo "
+                            "Finance data and web sources cited in the memo. Estimates and opinions are labelled as "
+                            "such. An automated fact-check pass reviewed the draft; errors may remain."),
+            ("Conflicts of interest", f"{position} The author receives no payment from {t} or any other party "
+                                      "for this memo."),
+            ("Previous recommendations", history),
+            ("Not investment advice", "This is general, impersonal research for educational purposes. It is not "
+                "investment advice or a personal recommendation within the meaning of MiFID II, and it does not take "
+                "into account any reader's objectives, financial situation or risk tolerance. Do your own research, "
+                "and consult an investment firm authorised by the CNMV (or your local regulator) before making "
+                "investment decisions. Investing involves risk, including the loss of capital."),
+        ]
+        title = "Disclosures"
+    body = "".join(f"<dt>{k}</dt><dd>{v}</dd>" for k, v in items)
+    section = f'<section id="disclosures" class="disclosures"><h2>{title}</h2><dl>{body}</dl></section>'
     return banner, section
 
 
 def render_html(memo_md: str, ticker: str, tool_calls: list[dict], meta: str = "",
-                generated_at=None, previous: list[dict] | None = None, disclosure_cfg: dict | None = None) -> str:
+                generated_at=None, previous: list[dict] | None = None, disclosure_cfg: dict | None = None,
+                lang: str = "en") -> str:
+    global _LANG
+    _LANG = lang
     ticker = ticker.upper()
     lines = memo_md.strip().splitlines()
     title = lines[0].lstrip("# ").strip() if lines and lines[0].startswith("#") else f"{ticker} memo"
@@ -395,7 +495,7 @@ def render_html(memo_md: str, ticker: str, tool_calls: list[dict], meta: str = "
     body_md = "\n".join(lines[body_start:])
 
     price = None
-    m = re.search(r"\*\*Price:\*\*\s*\$([\d,\.]+)", memo_md)
+    m = re.search(r"\*\*(?:Price|Precio):\*\*\s*\$([\d,\.]+)", memo_md)
     if m:
         price = float(m.group(1).replace(",", ""))
 
@@ -410,11 +510,19 @@ def render_html(memo_md: str, ticker: str, tool_calls: list[dict], meta: str = "
         latest[c.get("scenario", f"dcf{len(latest)}")] = c
     base = latest.get("base") or (dcfs[-1] if dcfs else None)
 
+    def safe(fn, *args):
+        """One failing chart should never stop the memo from rendering."""
+        try:
+            return fn(*args)
+        except Exception:
+            plt.close("all")
+            return None
+
     charts = {
-        "1": [chart_price_vs_market(ticker)],
-        "3": [chart_peers(peers, ticker) if peers else None],
-        "4": [chart_revenue_margin(hist), chart_cash_vs_earnings(hist)],
-        "6": [chart_scenarios(list(latest.values()), price), chart_sensitivity(base, price) if base else None],
+        "1": [safe(chart_price_vs_market, ticker)],
+        "3": [safe(chart_peers, peers, ticker) if peers else None],
+        "4": [safe(chart_revenue_margin, hist), safe(chart_cash_vs_earnings, hist)],
+        "6": [safe(chart_scenarios, list(latest.values()), price), safe(chart_sensitivity, base, price) if base else None],
     }
     charts = {k: [c for c in v if c] for k, v in charts.items()}
     # Escape any raw HTML in the model's text so only our own chart markup is rendered as HTML.
@@ -424,20 +532,20 @@ def render_html(memo_md: str, ticker: str, tool_calls: list[dict], meta: str = "
     body_html = markdown.markdown(body_md, extensions=["tables", "sane_lists"])
     from datetime import datetime
     banner, disclosure_section = disclosures_html(ticker, memo_md, generated_at or datetime.now(), previous,
-                                                  disclosure_cfg)
+                                                  disclosure_cfg, lang)
 
     return f"""<!doctype html>
-<html lang="en"><head><meta charset="utf-8">
+<html lang="{lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{escape(title)}</title><style>{CSS}</style></head>
 <body><main class="page">
-<div class="brand">AI Equity Research Agent &middot; Investment memo</div>
+<div class="brand">{T("AI Equity Research Agent &middot; Investment memo")}</div>
 <h1>{escape(title)}</h1>
 {kpi_html}
 {banner}
 {body_html}
 {disclosure_section}
-<div class="footer">Generated {(generated_at or date.today()):%B %d, %Y}. {escape(meta)}</div>
+<div class="footer">{T("Generated")} {(generated_at or date.today()):%Y-%m-%d}. {escape(meta)}</div>
 </main></body></html>"""
 
 

@@ -151,3 +151,39 @@ def test_disclosures_state_holdings(monkeypatch):
     assert "02 January 2026, 09:30" in html and "MiFID II" in html
     other = render.render_html(memo, "OTHR", [], disclosure_cfg=cfg)
     assert "holds no position in OTHR" in other and "the author holds" not in other
+
+
+def test_number_check_flags_changed_figures():
+    from equity_agent.translate import number_mismatches
+    en = "Revenue was $96.2B, up 106% on October 3, 2026."
+    assert number_mismatches(en, "Los ingresos fueron $96.2B, un 106% más, el 3 de octubre de 2026.") == {}
+    assert number_mismatches(en, "Los ingresos fueron $96,2B, un 106% más, el 3 de octubre de 2026.") == {"96.2": 1, "96,2": -1}
+    assert number_mismatches("Q2 revenue grew 106%", "Los ingresos del segundo trimestre crecieron un 106%") == {}
+
+
+def test_spanish_render_uses_spanish_labels(monkeypatch):
+    from equity_agent import render
+    monkeypatch.setattr(render.filings, "financial_history_data", lambda t: {})
+    monkeypatch.setattr(render, "chart_price_vs_market", lambda t: None)
+    memo = ("# Acme (ACME) - Informe de inversión\n\n**Fecha:** x | **Precio:** $10 | **Recomendación:** Mantener | "
+            "**Precio objetivo a 12 meses:** $11 (+10%)\n\n## 1. Recomendación y tesis\ntexto")
+    html = render.render_html(memo, "ACME", [], lang="es", disclosure_cfg={"author": "Ana", "holdings": ["ACME"]})
+    assert 'lang="es"' in html and "Información legal" in html and "Mantener, precio objetivo a 12 meses $11" in html
+    assert "Ana mantiene una posición larga en acciones de ACME" in html and "traducido automáticamente" in html
+    english = render.render_html(memo.replace("Informe", "Memo"), "ACME", [], disclosure_cfg={"author": "Ana", "holdings": []})
+    assert "Disclosures" in english and 'lang="en"' in english
+
+
+def test_all_charts_render_in_spanish(monkeypatch):
+    from equity_agent import render
+    years = [f"20{y}-01" for y in range(18, 26)]
+    hist = {"Revenue": {y: 100e9 + i * 10e9 for i, y in enumerate(years)},
+            "Operating income": {y: 30e9 for y in years},
+            "Net income": {y: 20e9 for y in years}, "Free cash flow": {y: 25e9 for y in years}}
+    base = dict(scenario="base", base_fcf_billions=10, growth_rates=[0.05] * 5, terminal_growth=0.02,
+                discount_rate=0.09, net_cash_billions=0, shares_billions=1)
+    for lang in ("en", "es"):
+        render._LANG = lang
+        assert render.chart_revenue_margin(hist) and render.chart_cash_vs_earnings(hist)
+        assert render.chart_scenarios([base], 150.0) and render.chart_sensitivity(base, 150.0)
+    render._LANG = "en"

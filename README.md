@@ -6,7 +6,8 @@ An autonomous AI agent that does buy-side due diligence on a public company. It 
 uv run equity-research NVDA
 ```
 
-**[▶ Live demo](https://renzo-equity-research.streamlit.app/)** · **Sample output:** [NVIDIA memo](sample_reports/NVDA_memo_2026-10-03.pdf) · [Microsoft memo](sample_reports/MSFT_memo_2026-10-03.pdf) · [Amazon memo](sample_reports/AMZN_memo_2026-10-03.pdf)
+**[▶ Live demo](https://renzo-equity-research.streamlit.app/)** · **Sample output:** [NVIDIA memo](sample_reports/NVDA_memo_2026-10-03.pdf) · [Microsoft memo](sample_reports/MSFT_memo_2026-10-03.pdf) · [Amazon memo](sample_reports/AMZN_memo_2026-10-03.pdf)  
+**En español:** [NVIDIA](sample_reports/NVDA_memo_2026-10-03_es.pdf) · [Microsoft](sample_reports/MSFT_memo_2026-10-03_es.pdf) · [Amazon](sample_reports/AMZN_memo_2026-10-03_es.pdf)
 
 Built with **Claude** (tool use, web search), **SEC EDGAR** and **Yahoo Finance**. All data sources are free. A full memo costs about **$0.40–0.50** in API usage, and a hard spending cap limits every run.
 
@@ -46,6 +47,8 @@ Built with **Claude** (tool use, web search), **SEC EDGAR** and **Yahoo Finance*
    - free cash flow against net income
    - DCF scenario values
    - a DCF sensitivity heatmap
+
+5. **Translates into Spanish (optional, `--spanish`).** A second Claude call translates the finished memo into professional Spanish (Spain), about $0.10–0.15 per memo. That's far cheaper than re-running the research, and both versions say the same thing. Charts, the banner and the legal disclosures have proper Spanish versions. An automatic **number check** compares every figure in the translation with the English original and flags any difference.
 
 **Memo structure:** recommendation and thesis · company overview · industry and competitive position · financial analysis · management, governance and capital allocation · valuation · variant perception · risks · catalysts · what would change our mind · sources.
 
@@ -111,7 +114,7 @@ uv run equity-research MSFT     # writes reports/MSFT_memo_<date>.html / .pdf / 
 
 On a Mac you can also double-click **`Run Equity Research Agent.command`**. It asks for a ticker, writes the memo and opens it, and can publish it to the live demo.
 
-Options: `--deep` (Opus, high effort), `--max-cost 0.75`, `--effort low|medium|high`, `--no-fact-check`, `--out folder`.
+Options: `--spanish` (also write a Spanish version), `--deep` (Opus, high effort), `--max-cost 0.75`, `--effort low|medium|high`, `--no-fact-check`, `--out folder`.
 
 Web UI: `uv run streamlit run app.py`. It has two modes. **Sample memos** makes no API calls, so it's safe as a public demo. **Live research** uses the server's key or the visitor's own.
 
