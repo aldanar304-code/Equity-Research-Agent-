@@ -32,7 +32,7 @@ def _env(name: str, default: str, cast=str):
 
 @dataclass
 class Settings:
-    model: str = _env("EQUITY_AGENT_MODEL", "claude-opus-5-5")
+    model: str = _env("EQUITY_AGENT_MODEL", "claude-sonnet-5-5")
     effort: str = _env("EQUITY_AGENT_EFFORT", "medium")  # low | medium | high
     max_cost_usd: float = _env("EQUITY_AGENT_MAX_COST_USD", "1.00", float)
     max_turns: int = _env("EQUITY_AGENT_MAX_TURNS", "16", int)

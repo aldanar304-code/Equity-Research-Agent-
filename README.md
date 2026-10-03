@@ -53,7 +53,7 @@ API spend was a design constraint, not an afterthought:
 - **Compact tool outputs.** Statements are trimmed to the key line items, filings are paginated at 12k characters, and numbers are pre-formatted (`331.84B`).
 - **Hard budget.** Once spending reaches 80% of the cap (default **$1.00**), the agent is told to stop researching and, with tool use disabled, writes the report from what it has.
 - **Bounded search.** Web searches are capped per report (default 5).
-- **Model choice.** Claude Opus 5.5 is the default. For cheaper runs, switch to Sonnet 5.5 (about half the price per token) or Haiku 4.5 (about a quarter).
+- **Model choice.** Claude Sonnet 5.5 is the default: strong analysis at half the per-token price of Opus 5.5. Switch to Opus 5.5 for the deepest reports or Haiku 4.5 for the cheapest.
 - **Transparent.** Running cost is printed live, and every saved report records its model, token counts and cost.
 
 ## Quickstart
@@ -71,7 +71,7 @@ Options:
 
 ```bash
 uv run equity-research AAPL --effort low --max-cost 0.50     # cheaper, faster
-uv run equity-research AAPL --model claude-sonnet-5-5        # cheaper model
+uv run equity-research AAPL --model claude-opus-5-5          # best quality, ~2x cost
 uv run equity-research AAPL --out sample_reports             # add to the demo gallery
 ```
 

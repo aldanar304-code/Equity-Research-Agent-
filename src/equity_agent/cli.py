@@ -30,7 +30,7 @@ def main(argv: list[str] | None = None) -> int:
 
     parser = argparse.ArgumentParser(description="Generate an AI equity research report for a stock.")
     parser.add_argument("ticker", help="Stock ticker, e.g. NVDA")
-    parser.add_argument("--model", help="Claude model ID (default: claude-opus-5-5)")
+    parser.add_argument("--model", help="Claude model ID (default: claude-sonnet-5-5)")
     parser.add_argument("--effort", choices=["low", "medium", "high"], help="Reasoning effort (default: medium)")
     parser.add_argument("--max-cost", type=float, help="Spending cap in USD for this report (default: 1.00)")
     parser.add_argument("--out", type=Path, default=Path("reports"), help="Output folder (default: reports/)")
