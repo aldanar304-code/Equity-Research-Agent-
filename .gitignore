@@ -6,3 +6,4 @@ __pycache__/
 reports/
 .streamlit/secrets.toml
 .pytest_cache/
+filings/

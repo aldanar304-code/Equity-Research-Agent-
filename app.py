@@ -26,8 +26,8 @@ SAMPLES = Path(__file__).parent / "sample_reports"
 st.set_page_config(page_title="AI Equity Research Agent", page_icon="📈", layout="wide")
 st.title("📈 AI Equity Research Agent")
 st.caption(
-    "An AI agent that researches a public company the way an analyst would - SEC filings, "
-    "financial statements, peer valuation and recent news - and writes an initiation report. "
+    "An AI agent that downloads a company's SEC filings, researches it the way an analyst would - "
+    "10 years of financials, filings search, DCF, peers, insider activity and news - and writes an investment memo. "
     "Built with Claude, SEC EDGAR and Yahoo Finance. Educational project, not investment advice."
 )
 
@@ -76,9 +76,9 @@ if not key:
 col1, col2, col3 = st.columns([2, 1, 1])
 ticker = col1.text_input("Ticker", placeholder="e.g. NVDA").strip().upper()
 effort = col2.selectbox("Depth", ["low", "medium", "high"], index=1)
-max_cost = col3.number_input("Spending cap (USD)", 0.10, 3.00, 1.00, 0.10)
+max_cost = col3.number_input("Spending cap (USD)", 0.10, 3.00, 1.50, 0.10)
 
-if st.button("Run research", type="primary", disabled=not (ticker and key)):
+if st.button("Write investment memo", type="primary", disabled=not (ticker and key)):
     settings = Settings(effort=effort, max_cost_usd=max_cost)
     cost_box = st.empty()
     with st.status(f"Researching {ticker}...", expanded=True) as status:
@@ -86,6 +86,8 @@ if st.button("Run research", type="primary", disabled=not (ticker and key)):
             if kind == "tool_call":
                 args = ", ".join(f"{k}={v}" for k, v in p["input"].items() if k != "url")
                 st.write(f"🔧 `{p['name']}`  {args}")
+            elif kind == "download":
+                st.write(f"📄 downloaded `{p['doc_id']}`")
             elif kind == "web_search":
                 st.write(f"🔎 searching the web: *{p['query']}*")
             elif kind == "status":
@@ -102,5 +104,5 @@ if st.button("Run research", type="primary", disabled=not (ticker and key)):
         status.update(label=f"{ticker}: done - {len(result.tool_calls)} tool calls, "
                             f"${result.cost_usd:.3f}", state="complete", expanded=False)
 
-    st.download_button("Download report (.md)", result.report, file_name=f"{ticker}_report.md")
+    st.download_button("Download memo (.md)", result.report, file_name=f"{ticker}_memo.md")
     st.markdown(result.report)

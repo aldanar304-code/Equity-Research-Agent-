@@ -331,8 +331,9 @@ def read_sec_filing(url: str, section: str = "mdna", offset: int = 0, max_chars:
         body = _extract_section(text, *patterns)
     note = ""
     if body is None:
-        body, section = text, "full_text"
-        note = "[section heading not found - showing the full filing text]\n"
+        if section != "full_text":
+            note = "[section heading not found - showing the full filing text]\n"
+        body, section, form = text, "full_text", "filing"
     elif len(body) < 2000:
         note = ("[this section is very short - the company probably incorporates it by reference "
                 "(e.g. a 10-Q pointing back to the 10-K, or MD&A filed as an exhibit). "

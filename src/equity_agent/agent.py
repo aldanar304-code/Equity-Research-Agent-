@@ -9,6 +9,7 @@ from typing import Callable
 
 import anthropic
 
+from . import filings
 from .prompts import SYSTEM_PROMPT
 from .tools import CUSTOM_TOOLS, run_tool
 
@@ -34,9 +35,10 @@ def _env(name: str, default: str, cast=str):
 class Settings:
     model: str = _env("EQUITY_AGENT_MODEL", "claude-sonnet-5-5")
     effort: str = _env("EQUITY_AGENT_EFFORT", "medium")  # low | medium | high
-    max_cost_usd: float = _env("EQUITY_AGENT_MAX_COST_USD", "1.00", float)
-    max_turns: int = _env("EQUITY_AGENT_MAX_TURNS", "16", int)
-    web_searches: int = _env("EQUITY_AGENT_WEB_SEARCHES", "5", int)
+    max_cost_usd: float = _env("EQUITY_AGENT_MAX_COST_USD", "1.50", float)
+    max_turns: int = _env("EQUITY_AGENT_MAX_TURNS", "24", int)
+    web_searches: int = _env("EQUITY_AGENT_WEB_SEARCHES", "6", int)
+    download_filings: bool = True
 
 
 @dataclass
@@ -106,16 +108,25 @@ def research(
     on_event: EventHandler | None = None,
     client: anthropic.Anthropic | None = None,
 ) -> ResearchResult:
-    """Run the agent on one ticker and return the finished Markdown report."""
+    """Download the filings, run the agent on one ticker and return the finished Markdown memo."""
     settings = settings or Settings()
     client = client or anthropic.Anthropic()
     emit = on_event or (lambda kind, payload: None)
     ticker = ticker.strip().upper()
 
+    manifest = []
+    if settings.download_filings:
+        emit("status", {"message": "Downloading SEC filings"})
+        try:
+            manifest = filings.download_filings(ticker, emit)
+        except Exception as exc:  # e.g. non-US company not in EDGAR
+            emit("status", {"message": f"Could not download SEC filings: {exc}"})
+
     kwargs = _request_kwargs(settings)
     messages: list[dict] = [{
         "role": "user",
-        "content": f"Write an equity research report on {ticker}. Today's date is {date.today():%B %d, %Y}.",
+        "content": (f"Write a full investment memo on {ticker}. Today's date is {date.today():%B %d, %Y}.\n\n"
+                    + filings.manifest_summary(manifest)),
     }]
     usage = Usage()
     tool_log: list[dict] = []
