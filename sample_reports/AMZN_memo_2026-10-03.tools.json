@@ -1,0 +1,228 @@
+[
+ {
+  "tool": "get_company_profile",
+  "input": {
+   "ticker": "AMZN"
+  }
+ },
+ {
+  "tool": "get_price_performance",
+  "input": {
+   "ticker": "AMZN"
+  }
+ },
+ {
+  "tool": "get_financial_history",
+  "input": {
+   "ticker": "AMZN"
+  }
+ },
+ {
+  "tool": "get_financial_statements",
+  "input": {
+   "ticker": "AMZN",
+   "statement": "income",
+   "period": "quarterly"
+  }
+ },
+ {
+  "tool": "get_financial_statements",
+  "input": {
+   "ticker": "AMZN",
+   "statement": "cashflow",
+   "period": "quarterly"
+  }
+ },
+ {
+  "tool": "get_financial_statements",
+  "input": {
+   "ticker": "AMZN",
+   "statement": "balance",
+   "period": "quarterly"
+  }
+ },
+ {
+  "tool": "get_analyst_estimates",
+  "input": {
+   "ticker": "AMZN"
+  }
+ },
+ {
+  "tool": "compare_peers",
+  "input": {
+   "tickers": [
+    "AMZN",
+    "MSFT",
+    "GOOGL",
+    "WMT",
+    "META",
+    "COST"
+   ]
+  }
+ },
+ {
+  "tool": "get_insider_activity",
+  "input": {
+   "ticker": "AMZN"
+  }
+ },
+ {
+  "tool": "read_filing",
+  "input": {
+   "ticker": "AMZN",
+   "doc_id": "8-K-EX-2026-07"
+  }
+ },
+ {
+  "tool": "search_filings",
+  "input": {
+   "ticker": "AMZN",
+   "query": "third quarter 2026 guidance net sales operating income expected between",
+   "form_types": [
+    "8-K-EX"
+   ]
+  }
+ },
+ {
+  "tool": "search_filings",
+  "input": {
+   "ticker": "AMZN",
+   "query": "Anthropic investment convertible notes fair value remaining performance obligations backlog",
+   "form_types": [
+    "10-Q"
+   ]
+  }
+ },
+ {
+  "tool": "search_filings",
+  "input": {
+   "ticker": "AMZN",
+   "query": "Jassy total compensation restricted stock units performance Summary Compensation Table",
+   "form_types": [
+    "DEF 14A"
+   ]
+  }
+ },
+ {
+  "tool": "web_search",
+  "input": {
+   "query": "Amazon Q2 2026 earnings call third quarter guidance capex 2026 Jassy Olsavsky"
+  }
+ },
+ {
+  "tool": "search_filings",
+  "input": {
+   "ticker": "AMZN",
+   "query": "capital expenditures 2026 expect cash capital expenditures; commitments; senior notes issued 2026",
+   "form_types": [
+    "10-Q"
+   ]
+  }
+ },
+ {
+  "tool": "web_search",
+  "input": {
+   "query": "Amazon Q2 2026 earnings capex 2026 guidance stock reaction AWS backlog"
+  }
+ },
+ {
+  "tool": "run_dcf",
+  "input": {
+   "scenario": "bear",
+   "base_fcf_billions": 40,
+   "growth_rates": [
+    0.25,
+    0.22,
+    0.18,
+    0.15,
+    0.12,
+    0.1,
+    0.08,
+    0.07,
+    0.06,
+    0.05
+   ],
+   "terminal_growth": 0.025,
+   "discount_rate": 0.105,
+   "net_cash_billions": -128.6,
+   "shares_billions": 10.9,
+   "current_price": 251.52
+  }
+ },
+ {
+  "tool": "run_dcf",
+  "input": {
+   "scenario": "base",
+   "base_fcf_billions": 55,
+   "growth_rates": [
+    0.3,
+    0.26,
+    0.22,
+    0.18,
+    0.15,
+    0.12,
+    0.1,
+    0.08,
+    0.07,
+    0.06
+   ],
+   "terminal_growth": 0.03,
+   "discount_rate": 0.095,
+   "net_cash_billions": -128.6,
+   "shares_billions": 10.9,
+   "current_price": 251.52
+  }
+ },
+ {
+  "tool": "run_dcf",
+  "input": {
+   "scenario": "bull",
+   "base_fcf_billions": 70,
+   "growth_rates": [
+    0.35,
+    0.3,
+    0.25,
+    0.2,
+    0.16,
+    0.13,
+    0.11,
+    0.09,
+    0.08,
+    0.07
+   ],
+   "terminal_growth": 0.035,
+   "discount_rate": 0.09,
+   "net_cash_billions": -128.6,
+   "shares_billions": 10.9,
+   "current_price": 251.52
+  }
+ },
+ {
+  "tool": "read_filing",
+  "input": {
+   "ticker": "AMZN",
+   "doc_id": "8-K-2026-09"
+  }
+ },
+ {
+  "tool": "read_filing",
+  "input": {
+   "ticker": "AMZN",
+   "doc_id": "8-K-2026-07-2"
+  }
+ },
+ {
+  "tool": "read_filing",
+  "input": {
+   "ticker": "AMZN",
+   "doc_id": "8-K-2026-06"
+  }
+ },
+ {
+  "tool": "read_filing",
+  "input": {
+   "ticker": "AMZN",
+   "doc_id": "8-K-2026-03"
+  }
+ }
+]
