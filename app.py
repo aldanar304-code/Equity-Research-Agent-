@@ -17,6 +17,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 load_dotenv()
+load_dotenv(Path.home() / ".config" / "equity-research-agent" / ".env")  # key saved outside the repo
 
 from equity_agent import ResearchError, Settings, research  # noqa: E402
 

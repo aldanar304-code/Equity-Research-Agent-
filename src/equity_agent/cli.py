@@ -26,6 +26,7 @@ def save_report(result, out_dir: Path) -> Path:
 
 def main(argv: list[str] | None = None) -> int:
     load_dotenv()
+    load_dotenv(Path.home() / ".config" / "equity-research-agent" / ".env")  # key saved outside the repo
     from .agent import ResearchError, Settings, research  # after .env is loaded
 
     parser = argparse.ArgumentParser(description="Generate an AI equity research report for a stock.")
