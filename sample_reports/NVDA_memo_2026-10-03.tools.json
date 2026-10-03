@@ -1,0 +1,196 @@
+[
+ {
+  "tool": "get_company_profile",
+  "input": {
+   "ticker": "NVDA"
+  }
+ },
+ {
+  "tool": "get_price_performance",
+  "input": {
+   "ticker": "NVDA"
+  }
+ },
+ {
+  "tool": "get_financial_history",
+  "input": {
+   "ticker": "NVDA"
+  }
+ },
+ {
+  "tool": "get_financial_statements",
+  "input": {
+   "ticker": "NVDA",
+   "statement": "income",
+   "period": "quarterly"
+  }
+ },
+ {
+  "tool": "get_analyst_estimates",
+  "input": {
+   "ticker": "NVDA"
+  }
+ },
+ {
+  "tool": "compare_peers",
+  "input": {
+   "tickers": [
+    "NVDA",
+    "AMD",
+    "AVGO",
+    "INTC",
+    "TSM",
+    "MU"
+   ]
+  }
+ },
+ {
+  "tool": "get_insider_activity",
+  "input": {
+   "ticker": "NVDA"
+  }
+ },
+ {
+  "tool": "read_filing",
+  "input": {
+   "ticker": "NVDA",
+   "doc_id": "8-K-EX-2026-08"
+  }
+ },
+ {
+  "tool": "read_filing",
+  "input": {
+   "ticker": "NVDA",
+   "doc_id": "8-K-EX-2026-08-2"
+  }
+ },
+ {
+  "tool": "get_financial_statements",
+  "input": {
+   "ticker": "NVDA",
+   "statement": "cashflow",
+   "period": "quarterly"
+  }
+ },
+ {
+  "tool": "search_filings",
+  "input": {
+   "ticker": "NVDA",
+   "query": "customer concentration direct customers percent of revenue",
+   "form_types": [
+    "10-Q"
+   ]
+  }
+ },
+ {
+  "tool": "search_filings",
+  "input": {
+   "ticker": "NVDA",
+   "query": "supply and capacity purchase obligations total; multi-year cloud service agreements; investments in non-marketable equity OpenAI Anthropic",
+   "form_types": [
+    "10-Q"
+   ]
+  }
+ },
+ {
+  "tool": "search_filings",
+  "input": {
+   "ticker": "NVDA",
+   "query": "CEO total compensation Jensen Huang summary compensation table performance-based",
+   "form_types": [
+    "DEF 14A"
+   ]
+  }
+ },
+ {
+  "tool": "search_filings",
+  "input": {
+   "ticker": "NVDA",
+   "query": "China H20 export license H200 revenue export controls",
+   "form_types": [
+    "10-Q"
+   ]
+  }
+ },
+ {
+  "tool": "web_search",
+  "input": {
+   "query": "Nvidia Q2 fiscal 2027 earnings call guidance stock reaction analysts"
+  }
+ },
+ {
+  "tool": "web_search",
+  "input": {
+   "query": "Nvidia earnings August 2026 stock reaction analysts Vera Rubin guidance"
+  }
+ },
+ {
+  "tool": "run_dcf",
+  "input": {
+   "scenario": "base",
+   "base_fcf_billions": 150,
+   "growth_rates": [
+    0.5,
+    0.35,
+    0.2,
+    0.12,
+    0.08,
+    0.06,
+    0.05,
+    0.04,
+    0.03
+   ],
+   "terminal_growth": 0.03,
+   "discount_rate": 0.1,
+   "net_cash_billions": 23.6,
+   "shares_billions": 24.3,
+   "current_price": 233.95
+  }
+ },
+ {
+  "tool": "run_dcf",
+  "input": {
+   "scenario": "bear",
+   "base_fcf_billions": 150,
+   "growth_rates": [
+    0.3,
+    0.1,
+    -0.1,
+    -0.2,
+    -0.05,
+    0.0,
+    0.02,
+    0.02
+   ],
+   "terminal_growth": 0.02,
+   "discount_rate": 0.11,
+   "net_cash_billions": 23.6,
+   "shares_billions": 24.3,
+   "current_price": 233.95
+  }
+ },
+ {
+  "tool": "run_dcf",
+  "input": {
+   "scenario": "bull",
+   "base_fcf_billions": 150,
+   "growth_rates": [
+    0.7,
+    0.45,
+    0.25,
+    0.15,
+    0.1,
+    0.08,
+    0.06,
+    0.05,
+    0.04,
+    0.04
+   ],
+   "terminal_growth": 0.035,
+   "discount_rate": 0.09,
+   "net_cash_billions": 23.6,
+   "shares_billions": 24.3,
+   "current_price": 233.95
+  }
+ }
+]

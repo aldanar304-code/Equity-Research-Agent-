@@ -187,8 +187,9 @@ def chart_sensitivity(base: dict, price: float | None) -> str | None:
     ax.grid(False)
     for i, row in enumerate(grid):
         for j, v in enumerate(row):
+            dark = price and not math.isnan(v) and abs(v / price - 1) > 0.25  # saturated cells
             ax.text(j, i, "n/a" if math.isnan(v) else f"${v:,.0f}", ha="center", va="center", fontsize=8,
-                    color=INK, fontweight="bold" if (i, j) == (2, 2) else "normal")
+                    color="white" if dark else INK, fontweight="bold" if (i, j) == (2, 2) else "normal")
     ax.set_title("Base-case DCF sensitivity (value per share)")
     del im
     return _figure(_svg(fig), "Green = above the current price, red = below. Centre cell is the base case.")
@@ -281,9 +282,10 @@ def render_html(memo_md: str, ticker: str, tool_calls: list[dict], meta: str = "
     lines = memo_md.strip().splitlines()
     title = lines[0].lstrip("# ").strip() if lines and lines[0].startswith("#") else f"{ticker} memo"
     kpi_html, body_start = "", 1
-    if len(lines) > 1 and lines[1].startswith("**"):
-        kpi_html, _ = _kpis(lines[1])
-        body_start = 2
+    nxt = next((i for i in range(1, min(len(lines), 4)) if lines[i].strip()), None)
+    if nxt and lines[nxt].startswith("**"):
+        kpi_html, _ = _kpis(lines[nxt])
+        body_start = nxt + 1
     body_md = "\n".join(lines[body_start:])
 
     price = None
