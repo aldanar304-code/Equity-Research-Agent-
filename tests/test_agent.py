@@ -66,7 +66,7 @@ def test_budget_forces_wrap_up():
         response([tool_use("t1", "get_company_profile", {"ticker": "ACME"})], "tool_use", expensive),
         response([text("# Report from partial data")], "end_turn"),
     ])
-    result = research("ACME", Settings(max_cost_usd=1.0), client=client)
+    result = research("ACME", Settings(model="claude-opus-5-5", max_cost_usd=1.0), client=client)
 
     final_call = client.calls[1]
     assert final_call["tool_choice"] == {"type": "none"}
