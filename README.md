@@ -6,8 +6,8 @@ An autonomous AI agent that does buy-side due diligence on a public company. It 
 uv run equity-research NVDA
 ```
 
-**[▶ Live demo](https://renzo-equity-research.streamlit.app/)** · **Sample output:** [NVIDIA memo](sample_reports/NVDA_memo_2026-10-03.pdf) · [Microsoft memo](sample_reports/MSFT_memo_2026-10-03.pdf) · [Amazon memo](sample_reports/AMZN_memo_2026-10-03.pdf)  
-**En español:** [NVIDIA](sample_reports/NVDA_memo_2026-10-03_es.pdf) · [Microsoft](sample_reports/MSFT_memo_2026-10-03_es.pdf) · [Amazon](sample_reports/AMZN_memo_2026-10-03_es.pdf)
+**[▶ Live demo](https://renzo-equity-research.streamlit.app/)** · **Sample output:** [NVIDIA memo](sample_reports/NVDA_memo_2026-10-03.pdf) · [Microsoft memo](sample_reports/MSFT_memo_2026-10-03.pdf) · [Amazon memo](sample_reports/AMZN_memo_2026-10-03.pdf) · [Apple memo](sample_reports/AAPL_memo_2026-10-04.pdf)  
+**En español:** [NVIDIA](sample_reports/NVDA_memo_2026-10-03_es.pdf) · [Microsoft](sample_reports/MSFT_memo_2026-10-03_es.pdf) · [Amazon](sample_reports/AMZN_memo_2026-10-03_es.pdf) · [Apple](sample_reports/AAPL_memo_2026-10-04_es.pdf)
 
 Built with **Claude** (tool use, web search), **SEC EDGAR** and **Yahoo Finance**. All data sources are free. A full memo costs about **$0.40–0.50** in API usage, and a hard spending cap limits every run.
 

@@ -1,0 +1,193 @@
+[
+ {
+  "tool": "get_company_profile",
+  "input": {
+   "ticker": "AAPL"
+  }
+ },
+ {
+  "tool": "get_price_performance",
+  "input": {
+   "ticker": "AAPL"
+  }
+ },
+ {
+  "tool": "get_financial_history",
+  "input": {
+   "ticker": "AAPL"
+  }
+ },
+ {
+  "tool": "get_financial_statements",
+  "input": {
+   "ticker": "AAPL",
+   "statement": "income",
+   "period": "quarterly"
+  }
+ },
+ {
+  "tool": "get_analyst_estimates",
+  "input": {
+   "ticker": "AAPL"
+  }
+ },
+ {
+  "tool": "compare_peers",
+  "input": {
+   "tickers": [
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "META",
+    "005930.KS"
+   ]
+  }
+ },
+ {
+  "tool": "get_insider_activity",
+  "input": {
+   "ticker": "AAPL"
+  }
+ },
+ {
+  "tool": "read_filing",
+  "input": {
+   "ticker": "AAPL",
+   "doc_id": "8-K-EX-2026-07"
+  }
+ },
+ {
+  "tool": "search_filings",
+  "input": {
+   "ticker": "AAPL",
+   "query": "tariff refunds IEEPA; Google licensing agreement search; Epic App Store; DOJ antitrust",
+   "form_types": [
+    "10-Q"
+   ]
+  }
+ },
+ {
+  "tool": "search_filings",
+  "input": {
+   "ticker": "AAPL",
+   "query": "CEO total compensation performance stock units relative TSR",
+   "form_types": [
+    "DEF 14A"
+   ]
+  }
+ },
+ {
+  "tool": "search_filings",
+  "input": {
+   "ticker": "AAPL",
+   "query": "gross margin outlook next quarter services gross margin repurchase authorization",
+   "form_types": [
+    "10-Q"
+   ]
+  }
+ },
+ {
+  "tool": "web_search",
+  "input": {
+   "query": "Apple Q3 fiscal 2026 earnings call September quarter guidance gross margin memory costs"
+  }
+ },
+ {
+  "tool": "read_filing",
+  "input": {
+   "ticker": "AAPL",
+   "doc_id": "8-K-2026-04-2"
+  }
+ },
+ {
+  "tool": "web_search",
+  "input": {
+   "query": "Apple earnings call July 30 2026 September quarter outlook revenue growth gross margin guidance"
+  }
+ },
+ {
+  "tool": "web_search",
+  "input": {
+   "query": "Apple 8-K April 20 2026 leadership announcement"
+  }
+ },
+ {
+  "tool": "web_search",
+  "input": {
+   "query": "Apple Q3 2026 earnings call transcript September quarter guidance"
+  }
+ },
+ {
+  "tool": "run_dcf",
+  "input": {
+   "scenario": "bear",
+   "base_fcf_billions": 100,
+   "growth_rates": [
+    0.04,
+    0.04,
+    0.035,
+    0.03,
+    0.03,
+    0.03,
+    0.025,
+    0.025,
+    0.025,
+    0.025
+   ],
+   "terminal_growth": 0.025,
+   "discount_rate": 0.1,
+   "net_cash_billions": 62,
+   "shares_billions": 14.61,
+   "current_price": 333.69
+  }
+ },
+ {
+  "tool": "run_dcf",
+  "input": {
+   "scenario": "base",
+   "base_fcf_billions": 108,
+   "growth_rates": [
+    0.09,
+    0.08,
+    0.07,
+    0.07,
+    0.06,
+    0.06,
+    0.05,
+    0.045,
+    0.04,
+    0.04
+   ],
+   "terminal_growth": 0.03,
+   "discount_rate": 0.09,
+   "net_cash_billions": 62,
+   "shares_billions": 14.61,
+   "current_price": 333.69
+  }
+ },
+ {
+  "tool": "run_dcf",
+  "input": {
+   "scenario": "bull",
+   "base_fcf_billions": 112,
+   "growth_rates": [
+    0.12,
+    0.11,
+    0.1,
+    0.09,
+    0.09,
+    0.08,
+    0.07,
+    0.06,
+    0.05,
+    0.05
+   ],
+   "terminal_growth": 0.035,
+   "discount_rate": 0.085,
+   "net_cash_billions": 62,
+   "shares_billions": 14.61,
+   "current_price": 333.69
+  }
+ }
+]
