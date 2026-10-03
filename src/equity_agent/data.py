@@ -261,7 +261,7 @@ def _heading(item: str, title: str) -> str:
         return r"\s?".join(re.escape(ch) if ch != "'" else ".{0,3}" for ch in w)
     # The look-arounds skip quoted cross-references such as: see "Item 1A. Risk Factors," below.
     return (r"(?<![“\"])item\s*" + word(item) + r"\.?\s*"
-            + r"\s*".join(word(w) for w in title.split()) + r"(?!\s*[,”\"’])")
+            + r"\s*".join(word(w) for w in title.split()) + r"(?!\s*[,”\"’])(?!(?-i:\s+(?!and\b|of\b)[a-z]))")
 
 
 def _any(*headings: tuple[str, str]) -> str:
