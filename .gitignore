@@ -7,3 +7,4 @@ reports/
 .streamlit/secrets.toml
 .pytest_cache/
 filings/
+CLAUDE.md
