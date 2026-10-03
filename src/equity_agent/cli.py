@@ -13,7 +13,9 @@ from dotenv import load_dotenv
 
 def save_report(result, out_dir: Path) -> Path:
     """Write the memo as Markdown, a styled HTML report with charts, and a PDF when a browser is available."""
-    from .render import html_to_pdf, render_html
+    from datetime import datetime
+
+    from .render import html_to_pdf, previous_recommendations, render_html
 
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"{result.ticker}_memo_{date.today():%Y-%m-%d}.md"
@@ -29,7 +31,9 @@ def save_report(result, out_dir: Path) -> Path:
 
     meta = f"Model: {result.model} | cost ${result.cost_usd:.2f} | {len(result.tool_calls)} tool calls."
     html_path = path.with_suffix(".html")
-    html_path.write_text(render_html(result.report, result.ticker, result.tool_calls, meta))
+    previous = previous_recommendations(result.ticker, out_dir, exclude=path)
+    html_path.write_text(render_html(result.report, result.ticker, result.tool_calls, meta,
+                                     generated_at=datetime.now(), previous=previous))
     html_to_pdf(html_path)
     return path
 

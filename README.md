@@ -49,6 +49,18 @@ Built with **Claude** (tool use, web search), **SEC EDGAR** and **Yahoo Finance*
 
 **Memo structure:** recommendation and thesis · company overview · industry and competitive position · financial analysis · management, governance and capital allocation · valuation · variant perception · risks · catalysts · what would change our mind · sources.
 
+## Disclosures and regulation
+Each memo ends with a disclosure section, and opens with a banner, following the EU Market Abuse Regulation (art. 20) rules for investment recommendations. The disclosures cover:
+- who produced the memo, and that it's AI-generated
+- the date and time it was produced, and the price used
+- what Buy / Hold / Sell means
+- the methodology
+- conflicts of interest: the author's positions, read from [`disclosures.toml`](disclosures.toml)
+- previous recommendations on the same company
+- a statement that it's general research, not a personal recommendation under MiFID II
+
+Keep `disclosures.toml` up to date when your holdings change.
+
 ## Architecture
 
 ```mermaid

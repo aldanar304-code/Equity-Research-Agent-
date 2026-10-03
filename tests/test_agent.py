@@ -137,3 +137,17 @@ def test_render_escapes_model_html(monkeypatch):
     html = render.render_html("# T\n\n## 1. Thesis\nhi <script>alert(1)</script> & more\n> quote", "ACME", [])
     assert "<script>alert" not in html and "&lt;script&gt;" in html
     assert "<blockquote>" in html
+
+
+def test_disclosures_state_holdings(monkeypatch):
+    from datetime import datetime
+    from equity_agent import render
+    monkeypatch.setattr(render.filings, "financial_history_data", lambda t: {})
+    monkeypatch.setattr(render, "chart_price_vs_market", lambda t: None)
+    memo = "# T\n\n**Date:** x | **Price:** $10 | **Recommendation:** Hold | **12-month target:** $11 (+10%)\n\n## 1. A\ntext"
+    cfg = {"author": "Ana", "holdings": ["ACME"], "short_positions": []}
+    html = render.render_html(memo, "ACME", [], generated_at=datetime(2026, 1, 2, 9, 30), disclosure_cfg=cfg)
+    assert "Ana holds a long position in ACME" in html and "the author holds ACME shares" in html
+    assert "02 January 2026, 09:30" in html and "MiFID II" in html
+    other = render.render_html(memo, "OTHR", [], disclosure_cfg=cfg)
+    assert "holds no position in OTHR" in other and "the author holds" not in other

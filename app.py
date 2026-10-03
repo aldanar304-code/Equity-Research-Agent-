@@ -116,7 +116,9 @@ if st.button("Write investment memo", type="primary", disabled=not (ticker and k
                             f"${result.cost_usd:.3f}", state="complete", expanded=False)
 
     from equity_agent.render import render_html
+    from equity_agent.render import previous_recommendations
     html = render_html(result.report, ticker, result.tool_calls,
-                       f"Model: {result.model} | cost ${result.cost_usd:.2f} | {len(result.tool_calls)} tool calls.")
+                       f"Model: {result.model} | cost ${result.cost_usd:.2f} | {len(result.tool_calls)} tool calls.",
+                       previous=previous_recommendations(ticker, SAMPLES))
     st.download_button("Download memo (.html)", html, file_name=f"{ticker}_memo.html")
     st.iframe(html, height=1400)

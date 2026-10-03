@@ -1,0 +1,13 @@
+# Disclosure settings, printed on every memo (EU Market Abuse Regulation art. 20 / CNMV).
+# Keep this up to date: whenever you buy or sell a stock you have published a memo on,
+# update `holdings` and re-render or re-run the memos.
+
+author = "Renzo Aldana"
+location = "Barcelona, Spain"
+
+# Tickers in which the author holds a position (long unless listed under short_positions).
+holdings = ["NVDA"]
+short_positions = []
+
+# Optional: link to the project so readers can see how the agent works.
+project_url = "https://github.com/aldanar304-code/Equity-Research-Agent-"
