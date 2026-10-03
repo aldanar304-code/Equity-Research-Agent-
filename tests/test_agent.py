@@ -22,7 +22,7 @@ def text(t):
 
 
 def no_downloads():
-    return Settings(download_filings=False)
+    return Settings(download_filings=False, fact_check=False)
 
 
 def response(content, stop_reason, u=None):
@@ -70,7 +70,7 @@ def test_budget_forces_wrap_up():
         response([tool_use("t1", "get_company_profile", {"ticker": "ACME"})], "tool_use", expensive),
         response([text("# Report from partial data")], "end_turn"),
     ])
-    result = research("ACME", Settings(model="claude-opus-5-5", max_cost_usd=1.0, download_filings=False), client=client)
+    result = research("ACME", Settings(model="claude-opus-5-5", max_cost_usd=1.0, download_filings=False, fact_check=False), client=client)
 
     final_call = client.calls[1]
     assert final_call["tool_choice"] == {"type": "none"}
@@ -116,3 +116,15 @@ def test_dcf_rejects_bad_rates():
     from equity_agent.filings import run_dcf
     with pytest.raises(ValueError):
         run_dcf(10, [0.05], 0.10, 0.08, 0, 1)
+
+
+def test_fact_check_pass_replaces_draft():
+    client = FakeClient([
+        response([text("# Draft with a wrong number")], "end_turn"),
+        response([tool_use("t1", "search_filings", {"ticker": "ACME", "query": "revenue"})], "tool_use"),
+        response([text("# Corrected memo\n### Fact-check notes\n- fixed revenue")], "end_turn"),
+    ])
+    result = research("ACME", Settings(download_filings=False), client=client)
+    assert result.report.startswith("# Corrected memo")
+    assert "Fact-check pass" in client.calls[1]["messages"][-1]["content"]
+    assert [c["tool"] for c in result.tool_calls] == ["search_filings"]

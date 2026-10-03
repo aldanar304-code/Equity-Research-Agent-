@@ -52,7 +52,7 @@ with st.sidebar:
         st.markdown(f"[Source code]({os.getenv('REPO_URL')})")
 
 if mode == "Sample reports":
-    reports = sorted(SAMPLES.glob("*.md"))
+    reports = sorted(p for p in SAMPLES.glob("*.md") if not p.name.endswith(".tools.md"))
     if not reports:
         st.info("No sample reports yet. Generate one with `uv run equity-research NVDA --out sample_reports`.")
         st.stop()
@@ -64,7 +64,15 @@ if mode == "Sample reports":
         c1.metric("Model", meta.group(1))
         c2.metric("Cost to generate", f"${meta.group(2)}")
         c3.metric("Tool calls", meta.group(3))
-    st.markdown(text)
+    html_file = choice.with_suffix(".html")
+    if html_file.exists():
+        import streamlit.components.v1 as components
+        components.html(html_file.read_text(), height=1400, scrolling=True)
+        pdf_file = choice.with_suffix(".pdf")
+        if pdf_file.exists():
+            st.download_button("Download PDF", pdf_file.read_bytes(), file_name=pdf_file.name)
+    else:
+        st.markdown(text)
     st.stop()
 
 # ---- Live research ----------------------------------------------------------
@@ -104,5 +112,9 @@ if st.button("Write investment memo", type="primary", disabled=not (ticker and k
         status.update(label=f"{ticker}: done - {len(result.tool_calls)} tool calls, "
                             f"${result.cost_usd:.3f}", state="complete", expanded=False)
 
-    st.download_button("Download memo (.md)", result.report, file_name=f"{ticker}_memo.md")
-    st.markdown(result.report)
+    from equity_agent.render import render_html
+    import streamlit.components.v1 as components
+    html = render_html(result.report, ticker, result.tool_calls,
+                       f"Model: {result.model} | cost ${result.cost_usd:.2f} | {len(result.tool_calls)} tool calls.")
+    st.download_button("Download memo (.html)", html, file_name=f"{ticker}_memo.html")
+    components.html(html, height=1400, scrolling=True)

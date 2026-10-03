@@ -287,7 +287,8 @@ _XBRL = {
     "Net income": ["NetIncomeLoss"],
     "Diluted EPS": ["EarningsPerShareDiluted"],
     "Operating cash flow": ["NetCashProvidedByUsedInOperatingActivities"],
-    "Capex": ["PaymentsToAcquirePropertyPlantAndEquipment"],
+    "Capex": ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets",
+              "PaymentsToAcquirePropertyPlantAndEquipmentAndIntangibleAssets"],
     "R&D": ["ResearchAndDevelopmentExpense"],
     "Buybacks": ["PaymentsForRepurchaseOfCommonStock"],
     "Dividends": ["PaymentsOfDividends", "PaymentsOfDividendsCommonStock"],
@@ -295,16 +296,19 @@ _XBRL = {
 }
 
 
-def financial_history(ticker: str, years: int = 10) -> str:
-    """Annual figures from 10-K XBRL data, as reported to the SEC."""
+def financial_history_data(ticker: str, years: int = 10) -> dict[str, dict[str, float]]:
+    """{metric: {fiscal-year-end 'YYYY-MM': value}} from 10-K XBRL data, as reported to the SEC."""
     cik = _cik(ticker)
     facts = _polite_get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json").json()
     gaap = facts.get("facts", {}).get("us-gaap", {})
 
     table: dict[str, dict[str, float]] = {}
     for label, tags in _XBRL.items():
-        best: dict[str, tuple[str, float]] = {}
+        # Companies switch tags over time (e.g. NVIDIA moved from RevenueFromContract... to Revenues),
+        # so merge them: earlier tags in the list win for a given year, later tags fill the gaps.
+        merged: dict[str, float] = {}
         for tag in tags:
+            best: dict[str, tuple[str, float]] = {}
             units = gaap.get(tag, {}).get("units", {})
             for unit_rows in units.values():
                 for r in unit_rows:
@@ -317,16 +321,23 @@ def financial_history(ticker: str, years: int = 10) -> str:
                     # keep the most recently filed value (restatements win)
                     if year not in best or r["filed"] > best[year][0]:
                         best[year] = (r["filed"], r["val"])
-            if best:
-                break
-        table[label] = {y: v for y, (_, v) in best.items()}
+            for y, (_, v) in best.items():
+                merged.setdefault(y, v)
+        table[label] = merged
+    if table["Operating cash flow"] and table["Capex"]:
+        # only where capex is known - otherwise FCF would silently equal operating cash flow
+        table["Free cash flow"] = {y: ocf - table["Capex"][y]
+                                   for y, ocf in table["Operating cash flow"].items() if y in table["Capex"]}
+    keep = sorted({y for col in table.values() for y in col})[-years:]
+    return {label: {y: v for y, v in col.items() if y in keep} for label, col in table.items()}
 
+
+def financial_history(ticker: str, years: int = 10) -> str:
+    """Annual figures from 10-K XBRL data, as reported to the SEC."""
+    table = financial_history_data(ticker, years)
     all_years = sorted({y for col in table.values() for y in col})[-years:]
     if not all_years:
         return "No XBRL annual data available."
-    if table["Operating cash flow"] and table["Capex"]:
-        table["Free cash flow"] = {y: table["Operating cash flow"][y] - table["Capex"].get(y, 0)
-                                   for y in table["Operating cash flow"]}
 
     def fmt(label, v):
         if v is None:
@@ -336,7 +347,8 @@ def financial_history(ticker: str, years: int = 10) -> str:
         return f"{v / 1e9:,.2f}B" if abs(v) >= 1e8 else f"{v / 1e6:,.1f}M"
 
     header = f"{'FY ending':<22}" + "".join(f"{y:>11}" for y in all_years)
-    lines = [f"{ticker.upper()} annual financials from SEC XBRL (10-K, as reported)", header]
+    lines = [f"{ticker.upper()} annual financials from SEC XBRL (10-K, as reported; EPS and share counts "
+             f"are NOT adjusted for later stock splits)", header]
     for label, col in table.items():
         if col:
             lines.append(f"{label:<22}" + "".join(f"{fmt(label, col.get(y)):>11}" for y in all_years))
@@ -346,6 +358,21 @@ def financial_history(ticker: str, years: int = 10) -> str:
 # ---------------------------------------------------------------------------
 # DCF
 # ---------------------------------------------------------------------------
+
+def dcf_value(base_fcf_billions: float, growth_rates: list[float], terminal_growth: float,
+              discount_rate: float, net_cash_billions: float, shares_billions: float):
+    """Returns (value per share, yearly rows, terminal value, PV of TV, PV of FCF, equity value)."""
+    fcf, pv, rows = base_fcf_billions, 0.0, []
+    for year, g in enumerate(growth_rates, start=1):
+        fcf *= 1 + g
+        disc = fcf / (1 + discount_rate) ** year
+        pv += disc
+        rows.append((year, g, fcf, disc))
+    tv = fcf * (1 + terminal_growth) / (discount_rate - terminal_growth)
+    pv_tv = tv / (1 + discount_rate) ** len(growth_rates)
+    equity = pv + pv_tv + net_cash_billions
+    return equity / shares_billions, rows, tv, pv_tv, pv, equity
+
 
 def run_dcf(base_fcf_billions: float, growth_rates: list[float], terminal_growth: float,
             discount_rate: float, net_cash_billions: float, shares_billions: float,
@@ -357,16 +384,7 @@ def run_dcf(base_fcf_billions: float, growth_rates: list[float], terminal_growth
         raise ValueError("Need at least one growth rate and a positive share count.")
 
     def value(dr, tg):
-        fcf, pv, rows = base_fcf_billions, 0.0, []
-        for year, g in enumerate(growth_rates, start=1):
-            fcf *= 1 + g
-            disc = fcf / (1 + dr) ** year
-            pv += disc
-            rows.append((year, g, fcf, disc))
-        tv = fcf * (1 + tg) / (dr - tg)
-        pv_tv = tv / (1 + dr) ** len(growth_rates)
-        equity = pv + pv_tv + net_cash_billions
-        return equity / shares_billions, rows, tv, pv_tv, pv, equity
+        return dcf_value(base_fcf_billions, growth_rates, tg, dr, net_cash_billions, shares_billions)
 
     per_share, rows, tv, pv_tv, pv_fcf, equity = value(discount_rate, terminal_growth)
     out = ["Year  Growth   FCF ($B)   PV ($B)"]

@@ -20,11 +20,13 @@ plus web search for the most recent earnings call and guidance.
 customer concentration, litigation, regulation, debt covenants or supply chain.
 7. Management, governance and capital allocation - search the proxy (DEF 14A) for CEO pay and how \
 it is structured; get_insider_activity; buybacks, dividends and M&A from the financial history.
-8. Valuation - run_dcf with explicit, defensible assumptions (normalize free cash flow if capex or \
+8. Valuation - run_dcf for each of the bear, base and bull scenarios with explicit, defensible assumptions (normalize free cash flow if capex or \
 working capital is unusual this year; 7-10 forecast years; discount rate 8-11% depending on risk; \
 terminal growth 2-3.5%), and cross-check against peer multiples. If the DCF and the market price \
 disagree sharply, explain which assumptions the market must be making.
-9. News and sentiment - web search for material recent events and analyst debate.
+9. Market expectations - get_analyst_estimates: consensus EPS and revenue, estimate revisions, \
+price targets. Say explicitly where your view differs from consensus and why.
+10. News and sentiment - web search for material recent events and analyst debate.
 
 Prefer search_filings for targeted questions over paging through whole documents. A complete \
 memo normally takes 15-25 tool calls. Never invent figures: every number must come from a tool \

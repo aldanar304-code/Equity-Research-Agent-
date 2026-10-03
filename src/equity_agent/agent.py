@@ -39,6 +39,7 @@ class Settings:
     max_turns: int = _env("EQUITY_AGENT_MAX_TURNS", "24", int)
     web_searches: int = _env("EQUITY_AGENT_WEB_SEARCHES", "6", int)
     download_filings: bool = True
+    fact_check: bool = True
 
 
 @dataclass
@@ -102,13 +103,96 @@ def _request_kwargs(settings: Settings) -> dict:
     return kwargs
 
 
+FACT_CHECK_PROMPT = """\
+Fact-check pass. Re-read your memo line by line. For every number, date and factual claim, confirm \
+that it appears in a tool result or cited web source in this conversation, or is clearly labelled \
+as your own estimate with the arithmetic shown. Check that figures agree with each other across \
+sections (target, scenario values, DCF outputs, peer table). Where you are unsure, verify with \
+search_filings, read_filing or the data tools (at most 6 tool calls). Fix anything wrong or \
+unsupported - correct it, label it as an estimate, or remove it. Do not add new analysis.
+
+Return the complete corrected memo in the same format, starting with the title line. At the very \
+end of the Appendix add a "### Fact-check notes" list describing each correction you made, or \
+"No corrections needed." if there were none."""
+
+
+class _Session:
+    """One conversation with Claude: runs tool-use turns until Claude returns a final text answer."""
+
+    def __init__(self, client, settings: Settings, emit: EventHandler, kwargs: dict, messages: list[dict]):
+        self.client, self.settings, self.emit = client, settings, emit
+        self.kwargs, self.messages = kwargs, messages
+        self.usage, self.tool_log = Usage(), []
+        self.model = settings.model
+
+    @property
+    def cost(self) -> float:
+        return self.usage.cost(self.settings.model)
+
+    def run(self, max_turns: int, budget_fraction: float, label: str) -> str:
+        """Loop until a final answer. Past budget_fraction of the cap (or the turn limit), tools
+        are switched off and Claude must answer with what it has."""
+        wrapping_up = False
+        for turn in range(1, max_turns + 1):
+            self.emit("status", {"message": f"{label} - writing" if wrapping_up else f"{label} (step {turn})"})
+            try:
+                response = self.client.beta.messages.create(messages=self.messages, **self.kwargs)
+            except anthropic.APIStatusError as exc:
+                raise ResearchError(f"Claude API error {exc.status_code}: {exc.message}") from exc
+            except anthropic.APIConnectionError as exc:
+                raise ResearchError("Could not reach the Claude API - check your network.") from exc
+
+            self.usage.add(response.usage)
+            self.model = response.model
+            self.emit("cost", {"cost_usd": self.cost, "usage": self.usage})
+            if response.stop_reason == "refusal":
+                raise ResearchError("Claude declined this request.")
+
+            for block in response.content:
+                if block.type == "server_tool_use" and block.name == "web_search":
+                    self.emit("web_search", {"query": block.input.get("query", "")})
+                    self.tool_log.append({"tool": "web_search", "input": block.input})
+
+            self.messages.append({"role": "assistant", "content": response.content})
+            if response.stop_reason == "pause_turn":
+                continue  # server-side web search loop paused; resend to let it resume
+
+            tool_uses = [b for b in response.content if b.type == "tool_use"]
+            if response.stop_reason != "tool_use" or not tool_uses:
+                text = "".join(b.text for b in response.content if b.type == "text").strip()
+                if response.stop_reason == "max_tokens":
+                    text += "\n\n*[Truncated: hit the output token limit.]*"
+                if not text:
+                    raise ResearchError(f"Claude finished without an answer (stop_reason={response.stop_reason}).")
+                return text
+
+            results = []
+            for tu in tool_uses:
+                self.emit("tool_call", {"name": tu.name, "input": tu.input})
+                self.tool_log.append({"tool": tu.name, "input": tu.input})
+                output, is_error = run_tool(tu.name, tu.input)
+                results.append({"type": "tool_result", "tool_use_id": tu.id, "content": output, "is_error": is_error})
+
+            over_budget = self.cost >= self.settings.max_cost_usd * budget_fraction
+            if not wrapping_up and (over_budget or turn >= max_turns - 1):
+                wrapping_up = True
+                reason = "research budget" if over_budget else "step limit"
+                results.append({"type": "text", "text": (
+                    f"You have reached the {reason}. Do not call any more tools. "
+                    "Write the full answer now using what you have gathered, marking gaps as n/a.")})
+                self.kwargs["tool_choice"] = {"type": "none"}
+            self.messages.append({"role": "user", "content": results})
+
+        raise ResearchError(f"Stopped after {max_turns} steps without a finished answer.")
+
+
 def research(
     ticker: str,
     settings: Settings | None = None,
     on_event: EventHandler | None = None,
     client: anthropic.Anthropic | None = None,
 ) -> ResearchResult:
-    """Download the filings, run the agent on one ticker and return the finished Markdown memo."""
+    """Download the filings, research one ticker, fact-check the draft and return the Markdown memo."""
     settings = settings or Settings()
     client = client or anthropic.Anthropic()
     emit = on_event or (lambda kind, payload: None)
@@ -122,67 +206,20 @@ def research(
         except Exception as exc:  # e.g. non-US company not in EDGAR
             emit("status", {"message": f"Could not download SEC filings: {exc}"})
 
-    kwargs = _request_kwargs(settings)
-    messages: list[dict] = [{
+    session = _Session(client, settings, emit, _request_kwargs(settings), [{
         "role": "user",
         "content": (f"Write a full investment memo on {ticker}. Today's date is {date.today():%B %d, %Y}.\n\n"
                     + filings.manifest_summary(manifest)),
-    }]
-    usage = Usage()
-    tool_log: list[dict] = []
-    wrapping_up = False
+    }])
+    # Leave ~30% of the budget for the fact-check pass.
+    memo = session.run(settings.max_turns, 0.7 if settings.fact_check else 0.8, "Researching")
 
-    for turn in range(1, settings.max_turns + 1):
-        emit("status", {"message": "Writing report" if wrapping_up else f"Researching (step {turn})"})
-        try:
-            response = client.beta.messages.create(messages=messages, **kwargs)
-        except anthropic.APIStatusError as exc:
-            raise ResearchError(f"Claude API error {exc.status_code}: {exc.message}") from exc
-        except anthropic.APIConnectionError as exc:
-            raise ResearchError("Could not reach the Claude API - check your network.") from exc
+    if settings.fact_check:
+        if session.cost < settings.max_cost_usd * 0.85:
+            session.kwargs.pop("tool_choice", None)
+            session.messages.append({"role": "user", "content": FACT_CHECK_PROMPT})
+            memo = session.run(8, 0.95, "Fact-checking")
+        else:
+            memo += "\n\n*Fact-check pass skipped: spending cap reached.*"
 
-        usage.add(response.usage)
-        cost = usage.cost(settings.model)
-        emit("cost", {"cost_usd": cost, "usage": usage})
-
-        if response.stop_reason == "refusal":
-            raise ResearchError("Claude declined this request.")
-
-        for block in response.content:
-            if block.type == "server_tool_use" and block.name == "web_search":
-                emit("web_search", {"query": block.input.get("query", "")})
-                tool_log.append({"tool": "web_search", "input": block.input})
-
-        messages.append({"role": "assistant", "content": response.content})
-
-        if response.stop_reason == "pause_turn":
-            continue  # server-side web search loop paused; resend to let it resume
-
-        tool_uses = [b for b in response.content if b.type == "tool_use"]
-        if response.stop_reason != "tool_use" or not tool_uses:
-            report = "".join(b.text for b in response.content if b.type == "text").strip()
-            if response.stop_reason == "max_tokens":
-                report += "\n\n*[Report truncated: hit the output token limit.]*"
-            if not report:
-                raise ResearchError(f"Claude finished without a report (stop_reason={response.stop_reason}).")
-            return ResearchResult(ticker, report, response.model, usage, cost, tool_log)
-
-        results = []
-        for tu in tool_uses:
-            emit("tool_call", {"name": tu.name, "input": tu.input})
-            tool_log.append({"tool": tu.name, "input": tu.input})
-            output, is_error = run_tool(tu.name, tu.input)
-            results.append({"type": "tool_result", "tool_use_id": tu.id, "content": output, "is_error": is_error})
-
-        # Out of budget or turns: hand back the results, then require the report with no further tool use.
-        over_budget = cost >= settings.max_cost_usd * 0.8
-        if not wrapping_up and (over_budget or turn >= settings.max_turns - 1):
-            wrapping_up = True
-            reason = "research budget" if over_budget else "step limit"
-            results.append({"type": "text", "text": (
-                f"You have reached the {reason}. Do not call any more tools. "
-                "Write the full report now using what you have gathered, marking gaps as n/a.")})
-            kwargs["tool_choice"] = {"type": "none"}
-        messages.append({"role": "user", "content": results})
-
-    raise ResearchError(f"Stopped after {settings.max_turns} steps without a finished report.")
+    return ResearchResult(ticker, memo, session.model, session.usage, session.cost, session.tool_log)

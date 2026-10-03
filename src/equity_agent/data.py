@@ -344,3 +344,48 @@ def read_sec_filing(url: str, section: str = "mdna", offset: int = 0, max_chars:
     footer = (f"\n\n[{remaining:,} more characters - call again with offset={offset + max_chars} to continue]"
               if remaining else "\n\n[end of section]")
     return f"{note}[{form} - section: {section} - chars {offset:,}-{offset + len(chunk):,} of {len(body):,}]\n{chunk}{footer}"
+
+
+def get_analyst_estimates(ticker: str) -> str:
+    """Wall Street consensus: EPS and revenue estimates, revisions, price targets and ratings."""
+    t = yf.Ticker(ticker)
+    labels = {"0q": "current quarter", "+1q": "next quarter", "0y": "current fiscal year", "+1y": "next fiscal year"}
+    parts = [f"{ticker.upper()} analyst consensus (Yahoo Finance)"]
+
+    def table(name, frame, cols, money=False):
+        if frame is None or frame.empty:
+            return
+        f = frame[[c for c in cols if c in frame.columns]].copy()
+        f.index = [labels.get(i, i) for i in f.index]
+        if money:
+            f = f.map(lambda v: _fmt_num(v) if isinstance(v, (int, float)) and abs(v) > 1e6 else v)
+        parts.append(f"\n{name}\n{f.to_string()}")
+
+    for name, attr, cols, money in [
+        ("EPS estimates", "earnings_estimate", ["avg", "low", "high", "yearAgoEps", "numberOfAnalysts", "growth"], False),
+        ("Revenue estimates", "revenue_estimate", ["avg", "low", "high", "yearAgoRevenue", "numberOfAnalysts", "growth"], True),
+        ("EPS estimate trend (how the consensus moved)", "eps_trend", ["current", "30daysAgo", "90daysAgo"], False),
+        ("EPS revisions (number of analysts)", "eps_revisions", ["upLast30days", "downLast30days"], False),
+    ]:
+        try:
+            table(name, getattr(t, attr), cols, money)
+        except Exception:
+            pass
+    try:
+        pt = t.analyst_price_targets or {}
+        if pt:
+            parts.append(f"\nPrice targets: mean {pt.get('mean')}, median {pt.get('median')}, "
+                         f"low {pt.get('low')}, high {pt.get('high')} (current {pt.get('current')})")
+    except Exception:
+        pass
+    try:
+        rec = t.recommendations_summary
+        if rec is not None and not rec.empty:
+            r = rec.iloc[0]
+            parts.append(f"Ratings now: strong buy {r['strongBuy']}, buy {r['buy']}, hold {r['hold']}, "
+                         f"sell {r['sell']}, strong sell {r['strongSell']}")
+    except Exception:
+        pass
+    if len(parts) == 1:
+        raise ValueError(f"No analyst estimates available for {ticker}.")
+    return "\n".join(parts)

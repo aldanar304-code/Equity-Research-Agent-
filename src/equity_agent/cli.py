@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from datetime import date
 from pathlib import Path
@@ -11,6 +12,9 @@ from dotenv import load_dotenv
 
 
 def save_report(result, out_dir: Path) -> Path:
+    """Write the memo as Markdown, a styled HTML report with charts, and a PDF when a browser is available."""
+    from .render import html_to_pdf, render_html
+
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"{result.ticker}_memo_{date.today():%Y-%m-%d}.md"
     u = result.usage
@@ -21,6 +25,12 @@ def save_report(result, out_dir: Path) -> Path:
         f"tool calls: {len(result.tool_calls)} -->\n"
     )
     path.write_text(result.report + footer)
+    (path.with_suffix(".tools.json")).write_text(json.dumps(result.tool_calls, indent=1, default=str))
+
+    meta = f"Model: {result.model} | cost ${result.cost_usd:.2f} | {len(result.tool_calls)} tool calls."
+    html_path = path.with_suffix(".html")
+    html_path.write_text(render_html(result.report, result.ticker, result.tool_calls, meta))
+    html_to_pdf(html_path)
     return path
 
 
@@ -34,10 +44,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--model", help="Claude model ID (default: claude-sonnet-5-5)")
     parser.add_argument("--effort", choices=["low", "medium", "high"], help="Reasoning effort (default: medium)")
     parser.add_argument("--max-cost", type=float, help="Spending cap in USD for this memo (default: 1.50)")
+    parser.add_argument("--deep", action="store_true",
+                        help="Highest quality: Claude Opus 5.5, high effort, $3 cap (about 2-3x the cost)")
+    parser.add_argument("--no-fact-check", action="store_true", help="Skip the fact-check pass")
     parser.add_argument("--out", type=Path, default=Path("reports"), help="Output folder (default: reports/)")
     args = parser.parse_args(argv)
 
     settings = Settings()
+    if args.deep:
+        settings.model, settings.effort, settings.max_cost_usd = "claude-opus-5-5", "high", 3.00
+    if args.no_fact_check:
+        settings.fact_check = False
     if args.model:
         settings.model = args.model
     if args.effort:
@@ -67,7 +84,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     path = save_report(result, args.out)
-    print(f"\nDone. Report saved to {path}  |  cost ${result.cost_usd:.3f}  |  "
+    print(f"\nDone. Memo saved to {path.with_suffix('.html')} (+ .md/.pdf)  |  cost ${result.cost_usd:.3f}  |  "
           f"{len(result.tool_calls)} tool calls", file=sys.stderr)
     return 0
 

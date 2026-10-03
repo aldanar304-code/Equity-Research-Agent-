@@ -67,6 +67,20 @@ CUSTOM_TOOLS = [
         },
     },
     {
+        "name": "get_analyst_estimates",
+        "description": (
+            "Wall Street consensus: EPS and revenue estimates for the current/next quarter and fiscal "
+            "year, how the EPS consensus moved over 90 days, up/down revisions, price targets and "
+            "buy/hold/sell counts. Use it to state what the market expects and where you differ."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"ticker": TICKER},
+            "required": ["ticker"],
+            "additionalProperties": False,
+        },
+    },
+    {
         "name": "get_financial_history",
         "description": (
             "Up to 10 years of annual financials as reported to the SEC (XBRL): revenue, gross profit, "
@@ -140,6 +154,7 @@ CUSTOM_TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
+                "scenario": {"type": "string", "enum": ["bear", "base", "bull"]},
                 "base_fcf_billions": {"type": "number"},
                 "growth_rates": {"type": "array", "items": {"type": "number"}},
                 "terminal_growth": {"type": "number"},
@@ -148,7 +163,7 @@ CUSTOM_TOOLS = [
                 "shares_billions": {"type": "number"},
                 "current_price": {"type": "number"},
             },
-            "required": ["base_fcf_billions", "growth_rates", "terminal_growth", "discount_rate",
+            "required": ["scenario", "base_fcf_billions", "growth_rates", "terminal_growth", "discount_rate",
                          "net_cash_billions", "shares_billions", "current_price"],
             "additionalProperties": False,
         },
@@ -161,6 +176,7 @@ _DISPATCH = {
         a["ticker"], a["statement"], a.get("period", "annual")),
     "get_price_performance": lambda a: data.get_price_performance(a["ticker"]),
     "compare_peers": lambda a: data.compare_peers(a["tickers"]),
+    "get_analyst_estimates": lambda a: data.get_analyst_estimates(a["ticker"]),
     "get_financial_history": lambda a: filings.financial_history(a["ticker"]),
     "search_filings": lambda a: filings.search_filings(a["ticker"], a["query"], a.get("form_types")),
     "read_filing": lambda a: filings.read_filing(
