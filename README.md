@@ -1,99 +1,105 @@
 # AI Equity Research Agent
 
-An autonomous AI agent that researches a public company the way a buy-side analyst would and writes an initiation report: business overview, multi-year financial analysis, peer valuation, bear/base/bull price scenarios, risks and catalysts, with every figure sourced.
+An autonomous AI agent that does buy-side due diligence on a public company. It downloads the company's SEC filings, researches it the way an analyst would, fact-checks its own work, and delivers an **investment memo** as a styled web page and PDF with charts.
 
 ```bash
 uv run equity-research NVDA
 ```
 
-Built with **Claude** (tool use + web search), **SEC EDGAR** and **Yahoo Finance**. All data sources are free; a full report costs well under a dollar in API usage and is capped by a hard spending limit.
+**Sample output:** [NVIDIA memo](sample_reports/NVDA_memo_2026-10-03.pdf) · [Microsoft memo](sample_reports/MSFT_memo_2026-10-03.pdf)
 
-> Educational project. The reports are not investment advice.
+Built with **Claude** (tool use, web search), **SEC EDGAR** and **Yahoo Finance**. All data sources are free. A full memo costs about **$0.40–0.50** in API usage, and a hard spending cap limits every run.
+
+> Educational project. The memos are not investment advice.
 
 ---
 
 ## What it does
 
-Given a ticker, Claude plans its own research and calls tools until it has enough evidence:
+1. **Downloads the filings** before any paid step, so this part costs nothing:
+   - the last 3 annual reports (10-K) and the last 4 quarterly reports (10-Q)
+   - 12 current reports (8-K) with their earnings press releases
+   - the proxy statement (executive pay and governance)
+   - a year of insider trades (Form 4)
+
+   For NVIDIA or Microsoft that's about 30 documents.
+2. **Researches ten areas.** Claude decides which tools to call, and in what order:
 
 | Tool | Source | Used for |
 |---|---|---|
-| `get_company_profile` | Yahoo Finance | Description, price, multiples, margins, analyst consensus |
-| `get_financial_statements` | Yahoo Finance | Income statement, balance sheet, cash flow (annual / quarterly) |
-| `get_price_performance` | Yahoo Finance | Returns vs S&P 500, volatility, drawdown, moving averages |
-| `compare_peers` | Yahoo Finance | Valuation and profitability table vs competitors it selects |
-| `list_sec_filings` / `read_sec_filing` | SEC EDGAR | 10-K / 10-Q sections: business, risk factors, MD&A |
-| `web_search` | Claude server tool | Earnings results, guidance, news, upcoming catalysts |
+| `get_company_profile` | Yahoo Finance | Price, valuation multiples, margins, balance sheet |
+| `get_financial_history` | SEC XBRL | 10 years of financials as reported to the SEC |
+| `get_financial_statements` | Yahoo Finance | Latest quarterly income, balance sheet and cash flow |
+| `get_analyst_estimates` | Yahoo Finance | Consensus EPS and revenue, estimate revisions, price targets |
+| `compare_peers` | Yahoo Finance | Valuation and profitability against competitors the agent picks |
+| `search_filings` | Downloaded filings | BM25 keyword search across every downloaded filing |
+| `read_filing` | Downloaded filings | Sections of a filing (business, risk factors, MD&A), paginated |
+| `get_insider_activity` | SEC Form 4 | Insider buying and selling, with grants and tax withholding separated out |
+| `run_dcf` | Computed in code | Bear / base / bull DCF with a sensitivity table |
+| `web_search` | Claude server tool | Earnings calls, guidance, news |
 
-It then writes a structured Markdown report (see [`sample_reports/`](sample_reports/)).
+3. **Fact-checks itself.** After the draft, a second pass re-checks every number against the tool results and fixes anything unsupported or inconsistent. Its corrections are listed in the memo. On the NVIDIA memo it caught 12 issues, including mis-cited filings, unsupported claims and opinions presented as facts. On the Microsoft memo it caught 8, including arithmetic slips.
+4. **Renders the memo** as HTML and PDF, with summary cards and six charts:
+   - price against the S&P 500
+   - peer multiples
+   - 10-year revenue and margin
+   - free cash flow against net income
+   - DCF scenario values
+   - a DCF sensitivity heatmap
+
+**Memo structure:** recommendation and thesis · company overview · industry and competitive position · financial analysis · management, governance and capital allocation · valuation · variant perception · risks · catalysts · what would change our mind · sources.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    U[CLI / Streamlit UI] --> A[Agent loop<br/>agent.py]
-    A <-->|messages + tool results| C[Claude API]
+    U[CLI / Streamlit UI] --> D[filings.py<br/>download + index SEC filings]
+    D --> A[agent.py<br/>research loop]
+    A <-->|tool calls| C[Claude API]
     C -->|server-side| W[Web search]
-    A --> T[Tool dispatcher<br/>tools.py]
+    A --> T[tools.py]
     T --> Y[Yahoo Finance]
-    T --> E[SEC EDGAR]
-    A --> R[Markdown report<br/>+ cost metadata]
+    T --> X[SEC XBRL]
+    T --> S[Filing search / DCF]
+    A --> F[Fact-check pass]
+    F --> R[render.py<br/>HTML + PDF + charts]
 ```
 
-- **`agent.py`**: a hand-written tool-use loop rather than a framework, so every step is visible: parallel tool calls, `pause_turn` handling for server-side search, refusal handling, and cost accounting per turn.
-- **`data.py`**: data access. Filing HTML is converted to text and split into sections (risk factors, MD&A) with regexes that cope with real-world formatting quirks, such as headings split across HTML tags (`RIS K FACTORS`) and table-of-contents entries that repeat each heading.
-- **`tools.py`**: JSON-schema tool definitions plus a dispatcher that returns errors to the model so it can adapt (for example, a non-US company with no 10-K).
-- **`prompts.py`**: the analyst instructions and report template.
+| File | Role |
+|---|---|
+| `agent.py` | A hand-written tool-use loop (no framework): parallel tool calls, `pause_turn` resumption, refusal handling, per-turn cost accounting, and a separate fact-check phase |
+| `filings.py` | EDGAR downloader, BM25 filing search, XBRL 10-year history, Form 4 parser, DCF engine |
+| `data.py` | Yahoo Finance tools; filing HTML-to-text conversion and section extraction |
+| `render.py` | Markdown to HTML with matplotlib SVG charts; PDF through headless Chrome |
+| `prompts.py` | The analyst instructions and memo template |
+
+### Real-world data problems this handles
+- **XBRL tag changes.** Companies change the names they use for figures. NVIDIA moved revenue from `RevenueFromContractWithCustomer…` to `Revenues` and reports capex as `PaymentsToAcquireProductiveAssets`. The tool merges the alternatives so the 10-year history has no gaps.
+- **Messy filing HTML.** Headings can be split across HTML tags (`RIS K FACTORS`), table-of-contents entries repeat each heading, and filings cross-reference "Item 1A" in running text. Section extraction handles all three.
+- **Inconsistent exhibit names.** Press releases aren't always named `ex99`; NVIDIA uses `q2fy27pr.htm`. The downloader looks for exhibits by content rather than file name.
+- **Conflicting sources.** When Yahoo's TTM free cash flow disagrees with the cash flow statement, the agent flags it rather than picking one silently.
 
 ## Cost engineering
-
-API spend was a design constraint, not an afterthought:
-
-- **Prompt caching.** Each loop iteration resends the conversation, and caching bills those repeated tokens at about 5% of the normal input price.
-- **Compact tool outputs.** Statements are trimmed to the key line items, filings are paginated at 12k characters, and numbers are pre-formatted (`331.84B`).
-- **Hard budget.** Once spending reaches 80% of the cap (default **$1.00**), the agent is told to stop researching and, with tool use disabled, writes the report from what it has.
-- **Bounded search.** Web searches are capped per report (default 5).
-- **Model choice.** Claude Sonnet 5.5 is the default: strong analysis at half the per-token price of Opus 5.5. Switch to Opus 5.5 for the deepest reports or Haiku 4.5 for the cheapest.
-- **Transparent.** Running cost is printed live, and every saved report records its model, token counts and cost.
+- **Free work first.** Downloading, searching and the DCF math run locally, so no tokens are spent on them.
+- **Search instead of read.** Filings total about 3 million characters per company. The agent retrieves only the passages it needs.
+- **Prompt caching.** The growing conversation is re-read from cache at about 10% of the normal input price.
+- **Hard budget.** At 70% of the cap the agent stops researching and writes the memo; the remaining 30% is reserved for the fact-check pass. The default cap is $1.50.
+- **Model choice.** Claude Sonnet 5.5 is the default. `--deep` switches to Claude Opus 5.5 at high effort for showcase memos.
 
 ## Quickstart
 
-Requires [uv](https://docs.astral.sh/uv/) (it installs Python 3.12 automatically) and an [Anthropic API key](https://console.anthropic.com/).
+Requires [uv](https://docs.astral.sh/uv/) and an [Anthropic API key](https://console.anthropic.com/).
 
 ```bash
-git clone <your-repo-url> && cd equity-research-agent
+git clone https://github.com/aldanar304-code/Equity-Research-Agent-.git && cd Equity-Research-Agent-
 uv sync
-cp .env.example .env        # then add your API key and contact email
-uv run equity-research MSFT
+cp .env.example .env            # add ANTHROPIC_API_KEY (and a contact email for the SEC)
+uv run equity-research MSFT     # writes reports/MSFT_memo_<date>.html / .pdf / .md
 ```
 
-Options:
+Options: `--deep` (Opus, high effort), `--max-cost 0.75`, `--effort low|medium|high`, `--no-fact-check`, `--out folder`.
 
-```bash
-uv run equity-research AAPL --effort low --max-cost 0.50     # cheaper, faster
-uv run equity-research AAPL --model claude-opus-5-5          # best quality, ~2x cost
-uv run equity-research AAPL --out sample_reports             # add to the demo gallery
-```
-
-Web UI:
-
-```bash
-uv run streamlit run app.py
-```
-
-## Free public demo
-
-The Streamlit app has two modes:
-
-- **Sample reports** shows pre-generated reports from `sample_reports/`. It makes no API calls, so a public link can't run up your bill.
-- **Live research** runs the agent. With no server key configured, visitors paste their own API key, which stays in their browser session.
-
-To deploy for free on [Streamlit Community Cloud](https://streamlit.io/cloud):
-
-1. Push this repo to GitHub.
-2. Create an app pointing to `app.py`.
-3. Leave `ANTHROPIC_API_KEY` **unset** in the app's secrets so visitors use sample mode or their own key.
-4. Optionally set `REPO_URL` to show a source-code link in the sidebar.
+Web UI: `uv run streamlit run app.py`. It has two modes. **Sample memos** makes no API calls, so it's safe as a public demo. **Live research** uses the server's key or the visitor's own.
 
 ## Tests
 
@@ -101,18 +107,10 @@ To deploy for free on [Streamlit Community Cloud](https://streamlit.io/cloud):
 uv run pytest
 ```
 
-The agent-loop tests use a scripted fake Claude client. They cover tool round-trips, budget wrap-up, `pause_turn` resumption, refusals and the cost math, and they run offline at no cost.
+The agent-loop tests use a scripted fake Claude client and run offline at no cost. They cover tool round-trips, budget wrap-up, `pause_turn`, refusals, the fact-check phase, cost math and the DCF math.
 
 ## Limitations
-
-- Yahoo Finance data is unofficial and occasionally missing fields; the agent marks gaps as n/a.
-- Filing section extraction is heuristic. Some companies (JPMorgan, for example) file their MD&A as an exhibit, and the tool tells the agent to fall back to the full text.
+- Yahoo Finance data is unofficial and sometimes conflicts with filings; the memo discloses any conflicts it finds.
 - SEC EDGAR covers only US-registered filers.
-- Reports can contain errors, like any analyst draft. Verify before relying on them.
-
-## Ideas for extension
-
-- XBRL "company facts" from EDGAR for 10+ years of standardized financials
-- Earnings-call transcript analysis
-- A simple DCF tool so valuation arithmetic runs in code rather than in the model
-- An evaluation set that checks report numbers against source data
+- XBRL EPS and share counts are as reported, not adjusted for later stock splits.
+- Like any analyst draft, a memo can contain errors. Verify before relying on it.
