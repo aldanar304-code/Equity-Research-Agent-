@@ -11,6 +11,8 @@ uv run equity-research NVDA
 
 Built with **Claude** (tool use, web search), **SEC EDGAR** and **Yahoo Finance**. All data sources are free. A full memo costs about **$0.40–0.50** in API usage, and a hard spending cap limits every run.
 
+<p align="center"><img src="assets/memo-preview.png" alt="Preview of an AI-generated NVIDIA investment memo: summary cards, thesis, DCF scenarios and sensitivity heatmap" width="720"></p>
+
 > Educational project. The memos are not investment advice.
 
 ---
@@ -131,3 +133,6 @@ The agent-loop tests use a scripted fake Claude client and run offline at no cos
 - SEC EDGAR covers only US-registered filers.
 - XBRL EPS and share counts are as reported, not adjusted for later stock splits.
 - Like any analyst draft, a memo can contain errors. Verify before relying on it.
+
+## License
+MIT. See [LICENSE](LICENSE).
