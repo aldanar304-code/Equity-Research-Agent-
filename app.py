@@ -9,12 +9,15 @@ Two modes:
 from __future__ import annotations
 
 import os
+import sys
 import re
 from pathlib import Path
 
 import anthropic
 import streamlit as st
 from dotenv import load_dotenv
+
+sys.path.insert(0, str(Path(__file__).parent / "src"))  # so it runs without installing the package (Streamlit Cloud)
 
 load_dotenv()
 load_dotenv(Path.home() / ".config" / "equity-research-agent" / ".env")  # key saved outside the repo
@@ -66,8 +69,7 @@ if mode == "Sample reports":
         c3.metric("Tool calls", meta.group(3))
     html_file = choice.with_suffix(".html")
     if html_file.exists():
-        import streamlit.components.v1 as components
-        components.html(html_file.read_text(), height=1400, scrolling=True)
+        st.iframe(html_file.read_text(), height=1400)
         pdf_file = choice.with_suffix(".pdf")
         if pdf_file.exists():
             st.download_button("Download PDF", pdf_file.read_bytes(), file_name=pdf_file.name)
@@ -113,8 +115,7 @@ if st.button("Write investment memo", type="primary", disabled=not (ticker and k
                             f"${result.cost_usd:.3f}", state="complete", expanded=False)
 
     from equity_agent.render import render_html
-    import streamlit.components.v1 as components
     html = render_html(result.report, ticker, result.tool_calls,
                        f"Model: {result.model} | cost ${result.cost_usd:.2f} | {len(result.tool_calls)} tool calls.")
     st.download_button("Download memo (.html)", html, file_name=f"{ticker}_memo.html")
-    components.html(html, height=1400, scrolling=True)
+    st.iframe(html, height=1400)

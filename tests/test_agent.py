@@ -128,3 +128,12 @@ def test_fact_check_pass_replaces_draft():
     assert result.report.startswith("# Corrected memo")
     assert "Fact-check pass" in client.calls[1]["messages"][-1]["content"]
     assert [c["tool"] for c in result.tool_calls] == ["search_filings"]
+
+
+def test_render_escapes_model_html(monkeypatch):
+    from equity_agent import render
+    monkeypatch.setattr(render.filings, "financial_history_data", lambda t: {})
+    monkeypatch.setattr(render, "chart_price_vs_market", lambda t: None)
+    html = render.render_html("# T\n\n## 1. Thesis\nhi <script>alert(1)</script> & more\n> quote", "ACME", [])
+    assert "<script>alert" not in html and "&lt;script&gt;" in html
+    assert "<blockquote>" in html

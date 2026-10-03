@@ -311,6 +311,9 @@ def render_html(memo_md: str, ticker: str, tool_calls: list[dict], meta: str = "
         "6": [chart_scenarios(list(latest.values()), price), chart_sensitivity(base, price) if base else None],
     }
     charts = {k: [c for c in v if c] for k, v in charts.items()}
+    # Escape any raw HTML in the model's text so only our own chart markup is rendered as HTML.
+    body_md = body_md.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    body_md = re.sub(r"^&gt;", ">", body_md, flags=re.MULTILINE)  # keep Markdown blockquotes
     body_md = _insert(charts, _fix_lists(body_md))
     body_html = markdown.markdown(body_md, extensions=["tables", "sane_lists"])
 
