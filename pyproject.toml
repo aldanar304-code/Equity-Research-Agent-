@@ -1,0 +1,31 @@
+[project]
+name = "equity-research-agent"
+description = "AI equity research agent built on Claude, SEC EDGAR and Yahoo Finance"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=1.11.0",
+    "beautifulsoup4>=4.15.0",
+    "python-dotenv>=1.2.4",
+    "requests>=2.34.2",
+    "streamlit>=1.65.0",
+    "yfinance>=1.7.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[project.scripts]
+equity-research = "equity_agent.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/equity_agent"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
