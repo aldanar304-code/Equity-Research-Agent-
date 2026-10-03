@@ -109,6 +109,8 @@ cp .env.example .env            # add ANTHROPIC_API_KEY (and a contact email for
 uv run equity-research MSFT     # writes reports/MSFT_memo_<date>.html / .pdf / .md
 ```
 
+On a Mac you can also double-click **`Run Equity Research Agent.command`**. It asks for a ticker, writes the memo and opens it, and can publish it to the live demo.
+
 Options: `--deep` (Opus, high effort), `--max-cost 0.75`, `--effort low|medium|high`, `--no-fact-check`, `--out folder`.
 
 Web UI: `uv run streamlit run app.py`. It has two modes. **Sample memos** makes no API calls, so it's safe as a public demo. **Live research** uses the server's key or the visitor's own.
