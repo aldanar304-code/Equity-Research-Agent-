@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Equity Research Agent - Project Thesis - Renzo Aldana</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 16mm 15mm; }
+  :root { --ink:#111827; --muted:#6b7280; --line:#e5e7eb; --accent:#1d4ed8; --soft:#f8fafc; --navy:#1f3a5f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); font: 10.4pt/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .page-break { break-before: page; }
+  .kicker { font-size: 8.5pt; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: 23pt; line-height: 1.15; margin: 4px 0 4px; color: var(--navy); }
+  .subtitle { font-size: 12pt; color: #374151; margin: 0 0 10px; }
+  .byline { font-size: 9.5pt; color: var(--muted); margin-bottom: 14px; }
+  .byline a { color: var(--accent); text-decoration: none; }
+  h2 { font-size: 14pt; color: var(--navy); margin: 22px 0 8px; padding-top: 8px; border-top: 2px solid var(--navy); break-after: avoid; }
+  h3 { font-size: 11pt; margin: 14px 0 4px; break-after: avoid; }
+  p { margin: 0 0 8px; }
+  ul, ol { margin: 0 0 8px; padding-left: 18px; }
+  li { margin: 0 0 3px; }
+  a { color: var(--accent); }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 14px; }
+  .kpi { background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .kpi .v { font-size: 15pt; font-weight: 700; color: var(--accent); line-height: 1.2; }
+  .kpi .l { font-size: 8.3pt; color: var(--muted); }
+  .box { background: var(--soft); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; padding: 9px 12px; margin: 10px 0; break-inside: avoid; }
+  .quote { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #d97706; border-radius: 6px; padding: 9px 12px; margin: 10px 0; break-inside: avoid; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.4pt; break-inside: avoid; }
+  th { text-align: left; background: var(--soft); font-weight: 600; }
+  th, td { border-bottom: 1px solid var(--line); padding: 5px 7px; vertical-align: top; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 10px 0 12px; break-inside: avoid; }
+  .step { border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: #fff; }
+  .step b { display: block; color: var(--accent); font-size: 9.5pt; }
+  .step span { font-size: 8.6pt; color: #374151; }
+  .step em { display: block; font-style: normal; font-size: 8pt; color: var(--muted); margin-top: 4px; }
+  figure { margin: 10px 0; text-align: center; break-inside: avoid; }
+  figure img { width: 78%; border: 1px solid var(--line); border-radius: 6px; }
+  figcaption { font-size: 8.5pt; color: var(--muted); margin-top: 4px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 9pt; }
+  .copy { background: #fff; border: 1px dashed #9ca3af; border-radius: 6px; padding: 9px 12px; margin: 8px 0; font-size: 9.6pt; break-inside: avoid; }
+  .tag { display: inline-block; background: #eef2ff; color: #3730a3; border-radius: 999px; padding: 1px 8px; font-size: 8.5pt; margin: 2px 3px 2px 0; }
+  footer { margin-top: 18px; font-size: 8.5pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6px; }
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE 1: PROJECT SUMMARY ============================ -->
+<div class="kicker">Project thesis &middot; Portfolio project</div>
+<h1>AI Equity Research Agent</h1>
+<p class="subtitle">An autonomous AI agent that reads a company's SEC filings, researches it like a buy-side analyst, fact-checks its own work and writes a fund-style investment memo, in English and Spanish.</p>
+<div class="byline"><b>Renzo Aldana</b> &middot; Barcelona, Spain &middot; October 2026<br>
+Live demo: <a href="https://renzo-equity-research.streamlit.app/">renzo-equity-research.streamlit.app</a> &middot;
+Code: <a href="https://github.com/aldanar304-code/Equity-Research-Agent-">github.com/aldanar304-code/Equity-Research-Agent-</a></div>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">~30</div><div class="l">SEC filings downloaded per company</div></div>
+  <div class="kpi"><div class="v">~20</div><div class="l">research steps (tool calls) per memo</div></div>
+  <div class="kpi"><div class="v">$0.41–0.52</div><div class="l">API cost per memo, about 4 minutes</div></div>
+  <div class="kpi"><div class="v">54</div><div class="l">self-corrections made by the fact-check across 4 memos</div></div>
+</div>
+
+<h3>The project in one paragraph</h3>
+<p>Given a stock ticker, the agent downloads the company's recent annual and quarterly reports, press releases, proxy statement and insider trades from the SEC (about 1,000 pages), then decides for itself what to research: 10 years of financials, competitors, analyst expectations, risks, executive pay and recent news. It values the company with a discounted cash flow (DCF) in bear, base and bull scenarios, forms a Buy / Hold / Sell view with a 12-month target, and explains where it disagrees with Wall Street. It then <b>re-checks its own draft against the sources and corrects its mistakes</b> before producing a styled PDF with six charts and EU-style legal disclosures.</p>
+
+<h3>Results</h3>
+<table>
+  <tr><th>Company</th><th>Call</th><th class="n">12-month target</th><th class="n">Tool calls</th><th class="n">Cost</th><th class="n">Self-corrections</th></tr>
+  <tr><td>NVIDIA (NVDA)</td><td>Hold</td><td class="n">$255 (+9%)</td><td class="n">19</td><td class="n">$0.43</td><td class="n">13</td></tr>
+  <tr><td>Microsoft (MSFT)</td><td>Hold</td><td class="n">$530 (+2%)</td><td class="n">23</td><td class="n">$0.52</td><td class="n">17</td></tr>
+  <tr><td>Amazon (AMZN)</td><td>Hold</td><td class="n">$255 (+1%)</td><td class="n">23</td><td class="n">$0.49</td><td class="n">10</td></tr>
+  <tr><td>Apple (AAPL)</td><td>Sell</td><td class="n">$290 (−13%)</td><td class="n">19</td><td class="n">$0.41</td><td class="n">14</td></tr>
+</table>
+<p class="small muted">Each memo also has a Spanish version (about $0.13 each). An automatic number check confirmed that no financial figure changed in any of the four translations.</p>
+
+<h3>What it demonstrates</h3>
+<div class="two small">
+  <div><b>Finance</b><br>DCF valuation and sensitivity analysis &middot; bear/base/bull scenarios &middot; peer multiples (P/E, EV/EBITDA) &middot; quality-of-earnings analysis &middot; reading 10-K, 10-Q, 8-K and proxy filings &middot; variant perception versus consensus</div>
+  <div><b>Technology</b><br>AI agents and tool use (Claude API) &middot; Python &middot; SEC EDGAR and XBRL data &middot; search over documents (BM25) &middot; automated testing &middot; data visualisation &middot; web app deployment (Streamlit)</div>
+</div>
+<div class="small" style="margin-top:6px"><b>Responsible AI and regulation:</b> self fact-checking, cost controls, AI-generated-content disclosure, and EU MAR / MiFID II-style disclosures, including the author's own position.</div>
+
+<!-- ============================ THESIS ============================ -->
+<div class="page-break"></div>
+<h2>1. The problem</h2>
+<p>Professional equity research is slow and expensive. Before an analyst can form a view on a company, they read hundreds of pages of filings, rebuild a multi-year financial history, compare competitors, check what Wall Street already expects and build a valuation model. For one company that's days of work.</p>
+<p>General-purpose AI chatbots look like a shortcut, but they have three weaknesses that make them unsuitable on their own:</p>
+<ol>
+  <li><b>They don't know current facts.</b> They answer from training data, not from today's filings and prices.</li>
+  <li><b>They make arithmetic slips.</b> Language models predict text; they don't calculate.</li>
+  <li><b>They can state unsupported claims confidently</b>, with no sources and no way to check them.</li>
+</ol>
+<p><b>Goal of the project:</b> build an AI system that does the analyst's groundwork with real, sourced data, keeps every number verifiable, costs less than a dollar per company, and produces a memo in the format a fund would actually use.</p>
+
+<h2>2. How it works</h2>
+<p>The key idea: <b>the AI is the brain, the tools are its hands.</b> Claude, the AI model, plans the research and writes. Small, reliable Python functions ("tools") fetch data, search documents and do the math. Because the AI acts (it looks things up and checks them) rather than answering from memory, the system is an <b>agent</b>, not a chatbot.</p>
+
+<div class="flow">
+  <div class="step"><b>1 · Download</b><span>~30 SEC filings saved locally</span><em>free · ~25 sec</em></div>
+  <div class="step"><b>2 · Research</b><span>Claude calls ~20 tools: financials, peers, filing search, DCF, news</span><em>~3 min · ~$0.30</em></div>
+  <div class="step"><b>3 · Write</b><span>Fund-style memo in a fixed 10-section template</span><em>included above</em></div>
+  <div class="step"><b>4 · Fact-check</b><span>Re-checks every number against sources and corrects</span><em>~$0.10</em></div>
+  <div class="step"><b>5 · Render</b><span>PDF and web page, 6 charts, disclosures, Spanish</span><em>free</em></div>
+</div>
+
+<h3>The team (one file per role)</h3>
+<table>
+  <tr><th>File</th><th>Role</th><th>What it does</th></tr>
+  <tr><td>filings.py</td><td>The librarian</td><td>Downloads SEC filings, searches them, builds the 10-year history from SEC XBRL data, summarizes insider trades, runs the DCF</td></tr>
+  <tr><td>data.py</td><td>Market data assistant</td><td>Prices, multiples, quarterly statements, analyst consensus and peers from Yahoo Finance</td></tr>
+  <tr><td>tools.py</td><td>Switchboard</td><td>The menu of tools Claude may use; routes each request to the right function</td></tr>
+  <tr><td>prompts.py</td><td>Job description</td><td>The analyst instructions and memo template ("never invent figures, cite every number…")</td></tr>
+  <tr><td>agent.py</td><td>Manager</td><td>Runs the conversation with Claude, executes tools, enforces the budget, triggers the fact-check</td></tr>
+  <tr><td>render.py / translate.py</td><td>Designer / translator</td><td>Charts, PDF, disclosures; Spanish translation with a number check</td></tr>
+  <tr><td>app.py / cli.py</td><td>Showroom / front door</td><td>The public web demo and the command (or double-click launcher) that starts a memo</td></tr>
+</table>
+<p class="small">Only one file, agent.py, talks to the AI. Everything that must be reliable (downloading, calculating, formatting) is ordinary code.</p>
+
+<h2>3. Key design decisions</h2>
+<div class="box"><b>Search instead of read.</b> One company's filings total about 3 million characters, roughly 1,000 pages. Feeding all of it to the AI would cost several dollars per memo, and most of it is boilerplate. Instead the agent searches the filings, like using a book's index or Ctrl+F, and reads only the matching passages. That keeps a memo at about $0.45.</div>
+<div class="box"><b>The math runs in code, not in the AI.</b> Claude chooses the assumptions (growth, discount rate) and explains why; Python computes the valuation exactly. This turned out to matter: in the Apple memo, the fact-check caught Claude writing that 28 × $9.40 ≈ $290, when the product is $263.</div>
+<div class="box"><b>A second pass that fact-checks the first.</b> After drafting, the agent re-reads its memo, verifies every number against the tool results, fixes errors, labels opinions as opinions and lists every change in "Fact-check notes". Across four memos it made 54 corrections.</div>
+<div class="box"><b>Hard cost controls.</b> Filings are downloaded with plain code (free). Prompt caching cuts the cost of re-reading the conversation, and a hard cap ($1.50 per memo) reserves 30% of the budget for the fact-check.</div>
+<div class="box"><b>A safe public demo.</b> The live website shows sample memos for free. To run new research, visitors use their own API key, so a public link can never generate costs for the author.</div>
+
+<h2>4. The finance behind each memo</h2>
+<h3>Discounted cash flow (DCF)</h3>
+<p>A company is worth all the cash it will produce in the future, translated into today's money. The agent starts from free cash flow (cash generated minus capital spending), projects it year by year for 8–10 years, adds a terminal value for the years after, discounts everything back at 8–11%, adjusts for cash and debt, and divides by the number of shares. A simple illustration: a business producing €100 a year forever is worth €100 ÷ 10% = €1,000 to an investor wanting 10%, but only €500 to one wanting 20%. <b>A higher required return means a lower value.</b></p>
+
+<h3>Scenarios and sensitivity</h3>
+<p>Because the future is uncertain, the DCF runs three times. For NVIDIA (price $234):</p>
+<table>
+  <tr><th>Scenario</th><th>Assumption</th><th class="n">Value per share</th><th class="n">vs price</th></tr>
+  <tr><td>Bear</td><td>AI spending slows and cash flow falls</td><td class="n">$69</td><td class="n">−71%</td></tr>
+  <tr><td>Base</td><td>Strong growth that gradually slows</td><td class="n">$229</td><td class="n">−2%</td></tr>
+  <tr><td>Bull</td><td>Very strong growth for longer</td><td class="n">$390</td><td class="n">+67%</td></tr>
+</table>
+<p>A sensitivity heatmap shows how much the value moves with the assumptions: from <b>$166</b> at a 12% discount rate to <b>$384</b> at 8%. One number is never enough.</p>
+
+<figure><img src="dcf-excerpt.png" alt="NVIDIA memo excerpt: DCF value per share by scenario and the base-case sensitivity heatmap"><figcaption>From the agent's NVIDIA memo: DCF value by scenario against the current price (top) and the sensitivity heatmap (bottom; green = above the price, red = below).</figcaption></figure>
+
+<h3>Valuation multiples</h3>
+<p>Like valuing a flat by its price per square metre, multiples compare the price with earnings and with similar companies. The agent picks 3–6 real competitors itself. In the NVIDIA memo, NVIDIA had the <b>lowest</b> forward P/E (14.9× versus 18.3× for Broadcom and 40.7× for AMD) despite the <b>fastest</b> growth (+106%). That's a signal either that it's cheap, or that the market expects its profits to fall later, and the memo discusses which.</p>
+
+<h3>Quality of earnings: is the profit real and repeatable?</h3>
+<table>
+  <tr><th>Warning sign</th><th>What the agent found</th></tr>
+  <tr><td>One-off gains</td><td><b>Amazon:</b> Q2 profit of $62.6B included $53.4B of gains on its Anthropic stake, so the underlying business earned far less.</td></tr>
+  <tr><td>Profit without cash</td><td><b>NVIDIA:</b> $59.7B of net income but only $24.1B of operating cash in Q2, as customers took longer to pay.</td></tr>
+  <tr><td>Spending absorbing cash</td><td><b>Microsoft:</b> record profits, but free cash flow fell two years in a row as data-centre capex reached $116B.</td></tr>
+</table>
+
+<h3>Variant perception: where it disagrees with the market</h3>
+<p>Being right isn't enough; an investor has to be right about something the market has wrong. Each memo compares its view with analyst consensus. <b>Amazon:</b> 57 of 59 analysts rate it Buy with an average target of $331 (+31%). The agent rated it <b>Hold at $255</b>, because consensus earnings had risen 48% in 90 days largely on one-off investment gains, while free cash flow was negative and debt rising. <b>Apple</b> was the only <b>Sell</b>: at 34.8× forward earnings, none of the agent's DCF scenarios reached the current price, and its record June-quarter margin was flattered by one-off tariff refunds.</p>
+
+<h2>5. Proof it works: the fact-check in action</h2>
+<p>The self-check is the feature that most separates this project from a chatbot. Real corrections from the four memos:</p>
+<table>
+  <tr><th>Memo</th><th>What the agent caught in its own draft</th></tr>
+  <tr><td>Apple</td><td>Arithmetic error in the price target (28 × $9.40 is $263, not $290). It rebuilt the target so it matched the valuation section.</td></tr>
+  <tr><td>Amazon</td><td>A debt ratio of 3.5× flattered by $16B of one-off gains, corrected to an honest ~4.8×. It also reworded an FTC case described as "settled and paid", since the filing only said Amazon expected to pay.</td></tr>
+  <tr><td>Microsoft</td><td>Revenue growth miscalculated as 15.0% (correct: 15.7%), and a figure attributed to the wrong quarter by a web source.</td></tr>
+  <tr><td>NVIDIA</td><td>Cited an annual report it hadn't actually read. It replaced the citation with the documents it did use and removed the report from its "reviewed" list.</td></tr>
+</table>
+
+<h2>6. Real-world problems solved along the way</h2>
+<ul>
+  <li><b>Companies change their data labels.</b> NVIDIA changed the label it uses for revenue in its SEC data in 2023, and reports capital spending under a different label than most companies. That first produced empty revenue figures and overstated free cash flow. The fix merges all the alternative labels; NVIDIA's FY26 free cash flow now matches its statements ($96.7B).</li>
+  <li><b>Messy documents.</b> Filings split headings across HTML tags ("RIS K FACTORS"), repeat each heading in the table of contents, and mention sections in running text. The section finder handles all three.</li>
+  <li><b>Inconsistent file names.</b> Earnings press releases aren't always named "ex99"; NVIDIA uses "q2fy27pr.htm". The downloader finds exhibits by what they are, not by their name.</li>
+  <li><b>Translation safety.</b> The number check initially flagged harmless rewording ("Q2" became "segundo trimestre"), so it was refined to focus on real financial figures. A test now verifies every chart in both languages after a translation bug was caught.</li>
+</ul>
+<p>Every fix is backed by an automated test (14 in total), so problems can't silently return.</p>
+
+<h2>7. Responsible use and regulation</h2>
+<p>The memos are written as <b>general, impersonal research</b>, not personal investment advice, which under EU rules (MiFID II) would require authorisation from the CNMV. Because the memos contain Buy / Hold / Sell calls, they follow the EU Market Abuse Regulation's disclosure rules for investment recommendations. Every memo states that it's AI-generated, when it was produced and at what price, its methodology, the author's own positions (I hold NVIDIA shares, and this is disclosed on the NVIDIA memo), and that it's not investment advice.</p>
+
+<h2>8. Limitations and next steps</h2>
+<div class="two small">
+  <div><b>Limitations</b>
+    <ul>
+      <li>Covers only US-listed companies (SEC filings).</li>
+      <li>Yahoo Finance data is unofficial and sometimes conflicts with filings; the agent discloses conflicts it finds.</li>
+      <li>The fact-check reduces errors but can't guarantee there are none.</li>
+      <li>Older EPS figures aren't adjusted for later stock splits.</li>
+    </ul></div>
+  <div><b>Next steps</b>
+    <ul>
+      <li><b>Public track record:</b> score each call after 3, 6 and 12 months, misses included.</li>
+      <li><b>Plain-English mode</b> for beginner investors.</li>
+      <li><b>"Ask the memo":</b> questions answered from the filings, with citations.</li>
+      <li>Coverage of European companies.</li>
+    </ul></div>
+</div>
+
+<h2>9. How it was built</h2>
+<p>I designed the product and made the key decisions: the scope, the memo format, cost limits, the fact-check step, the Spanish version, the regulatory disclosures and the public-demo model. I built it with an AI coding assistant (Claude Code), tested it on real companies, and reviewed the outputs, including checking figures against the original filings. Total API spend for the whole project, including all sample memos and translations, was about $3.</p>
+<p><span class="tag">Python</span><span class="tag">Claude API (tool use)</span><span class="tag">SEC EDGAR</span><span class="tag">XBRL</span><span class="tag">Yahoo Finance</span><span class="tag">BM25 search</span><span class="tag">matplotlib</span><span class="tag">Streamlit</span><span class="tag">pytest</span><span class="tag">GitHub</span></p>
+
+<!-- ============================ APPENDIX ============================ -->
+<div class="page-break"></div>
+<h2>Appendix: Ready-to-use text</h2>
+<h3>CV: projects section</h3>
+<div class="copy"><b>AI Equity Research Agent</b> &middot; Python, Claude API &middot; renzo-equity-research.streamlit.app<br>
+• Built an autonomous AI agent that downloads a company's SEC filings and writes a fund-style investment memo: 10-year financial analysis, peer comparison, insider activity, analyst consensus and DCF valuation, delivered as a PDF with charts.<br>
+• Designed a self fact-checking step that made 54 corrections across four memos (NVIDIA, Microsoft, Amazon, Apple), plus a Spanish translation with an automatic check that every figure matches.<br>
+• Kept costs to about $0.45 per memo through local data processing, document search and hard spending caps; added EU MiFID II / MAR-style disclosures for publishing research responsibly.</div>
+
+<h3>LinkedIn: Projects section</h3>
+<div class="copy"><b>Title:</b> AI Equity Research Agent<br>
+<b>Description:</b> An AI agent that does an equity analyst's groundwork. Given a ticker, it downloads the company's SEC filings (about 1,000 pages), researches 10 years of financials, competitors, analyst expectations, risks and executive pay, values the company with a DCF in bear/base/bull scenarios, and writes a fund-style investment memo with a Buy/Hold/Sell view, in English or Spanish. A second pass fact-checks the draft against its sources; across four memos it made 54 self-corrections. About $0.45 and 4 minutes per memo. Built with Python and the Claude API.<br>
+<b>Links:</b> live demo and GitHub repository.</div>
+
+<h3>LinkedIn: post</h3>
+<div class="copy">I built an AI equity research agent. 📈<br><br>
+Give it a ticker and it downloads the company's SEC filings, analyses 10 years of financials, compares it with competitors, checks insider trading and analyst expectations, runs a DCF valuation, and writes an investment memo, in English or Spanish.<br><br>
+My favourite part: after writing, it fact-checks itself. On Apple it caught that its own price-target math was wrong; on Amazon it noticed a debt ratio flattered by one-off gains. Across four memos it made 54 corrections to its own drafts.<br><br>
+Each memo costs about $0.45 to produce. Sample memos (NVIDIA, Microsoft, Amazon, Apple): renzo-equity-research.streamlit.app<br>
+Code: github.com/aldanar304-code/Equity-Research-Agent-<br><br>
+Built with Python and Claude. Educational project, not investment advice.</div>
+
+<footer>AI Equity Research Agent &middot; Project thesis &middot; Renzo Aldana &middot; October 2026. The memos referenced are educational research generated by an AI agent and are not investment advice.</footer>
+</body>
+</html>

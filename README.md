@@ -6,7 +6,7 @@ An autonomous AI agent that does buy-side due diligence on a public company. It 
 uv run equity-research NVDA
 ```
 
-**[▶ Live demo](https://renzo-equity-research.streamlit.app/)** · **Sample output:** [NVIDIA memo](sample_reports/NVDA_memo_2026-10-03.pdf) · [Microsoft memo](sample_reports/MSFT_memo_2026-10-03.pdf) · [Amazon memo](sample_reports/AMZN_memo_2026-10-03.pdf) · [Apple memo](sample_reports/AAPL_memo_2026-10-04.pdf)  
+**[▶ Live demo](https://renzo-equity-research.streamlit.app/)** · **[Project thesis (PDF)](docs/Renzo%20Aldana%20-%20AI%20Equity%20Research%20Agent%20-%20Project%20Thesis.pdf)** · **Sample output:** [NVIDIA memo](sample_reports/NVDA_memo_2026-10-03.pdf) · [Microsoft memo](sample_reports/MSFT_memo_2026-10-03.pdf) · [Amazon memo](sample_reports/AMZN_memo_2026-10-03.pdf) · [Apple memo](sample_reports/AAPL_memo_2026-10-04.pdf)  
 **En español:** [NVIDIA](sample_reports/NVDA_memo_2026-10-03_es.pdf) · [Microsoft](sample_reports/MSFT_memo_2026-10-03_es.pdf) · [Amazon](sample_reports/AMZN_memo_2026-10-03_es.pdf) · [Apple](sample_reports/AAPL_memo_2026-10-04_es.pdf)
 
 Built with **Claude** (tool use, web search), **SEC EDGAR** and **Yahoo Finance**. All data sources are free. A full memo costs about **$0.40–0.50** in API usage, and a hard spending cap limits every run.
@@ -41,7 +41,7 @@ Built with **Claude** (tool use, web search), **SEC EDGAR** and **Yahoo Finance*
 | `run_dcf` | Computed in code | Bear / base / bull DCF with a sensitivity table |
 | `web_search` | Claude server tool | Earnings calls, guidance, news |
 
-3. **Fact-checks itself.** After the draft, a second pass re-checks every number against the tool results and fixes anything unsupported or inconsistent. Its corrections are listed in the memo. On the NVIDIA memo it caught 12 issues, including mis-cited filings, unsupported claims and opinions presented as facts. On the Microsoft memo it caught 8, including arithmetic slips. On the Amazon memo it caught 10, including a leverage ratio inflated by one-off gains and an incorrectly described FTC settlement.
+3. **Fact-checks itself.** After the draft, a second pass re-checks every number against the tool results and fixes anything unsupported or inconsistent. Its corrections are listed in the memo. Across the four sample memos it made **54 corrections**: 13 on NVIDIA, 17 on Microsoft, 10 on Amazon and 14 on Apple. They include arithmetic errors (an Apple price target that didn't add up), mis-cited filings, a leverage ratio inflated by one-off gains, and opinions presented as facts.
 4. **Renders the memo** as HTML and PDF, with summary cards and six charts:
    - price against the S&P 500
    - peer multiples
