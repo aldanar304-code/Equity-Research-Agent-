@@ -249,7 +249,7 @@ with tab_new:
         own_key = st.text_input("Your Anthropic API key", type="password",
                                 help="Used only for this request and never stored. It starts with sk-ant-.")
         st.caption("Don't have one? Create a key at [console.anthropic.com](https://console.anthropic.com) "
-                   "(add a little credit first). A memo costs about $0.45 of your credit, $0.60 with Spanish.")
+                   "(add a little credit first). A memo costs about US\\$0.45 of your credit, US\\$0.60 with Spanish.")
         allowed, note = bool(own_key), ""
     else:
         allowed, note = free_try_status()
