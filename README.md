@@ -118,7 +118,11 @@ On a Mac you can also double-click **`Run Equity Research Agent.command`**. It a
 
 Options: `--spanish` (also write a Spanish version), `--deep` (Opus, high effort), `--max-cost 0.75`, `--effort low|medium|high`, `--no-fact-check`, `--out folder`.
 
-Web UI: `uv run streamlit run app.py`. It has two modes. **Sample memos** makes no API calls, so it's safe as a public demo. **Live research** uses the server's key or the visitor's own.
+Web UI: `uv run streamlit run app.py`. It has two tabs:
+- **Sample memos:** free to browse, in English and Spanish.
+- **Write a new memo:** anyone can research a US-listed company. Visitors either get a **free try** paid by the site owner's key or paste **their own Anthropic API key**. Free tries are protected by a daily budget (default $3), one free memo per visitor per day, a $1 cap per memo, and reuse of any memo written in the last 7 days.
+
+Streamlit secrets for the live site: `ANTHROPIC_API_KEY` (enables free tries), `DAILY_BUDGET_USD`, `FREE_MEMOS_PER_VISITOR`, `SEC_USER_AGENT`.
 
 ## Tests
 
