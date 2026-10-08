@@ -64,11 +64,114 @@ def _sec_get(url: str) -> requests.Response:
 # Yahoo Finance
 # ---------------------------------------------------------------------------
 
+
+def _yahoo_info(ticker: str) -> dict:
+    """Yahoo's quote summary. Often blocked from cloud servers, so failures return {}."""
+    try:
+        info = yf.Ticker(ticker).info or {}
+    except Exception:
+        return {}
+    return info if (info.get("longName") or info.get("shortName")) else {}
+
+
+def _row(frame, names, n=4):
+    """Sum of the last n columns of the first matching row (None if unavailable)."""
+    if frame is None or frame.empty:
+        return None
+    for name in names:
+        if name in frame.index:
+            vals = frame.loc[name].iloc[:n].dropna()
+            if len(vals) == n:
+                return float(vals.sum())
+    return None
+
+
+def _latest(frame, names):
+    if frame is None or frame.empty:
+        return None
+    for name in names:
+        if name in frame.index:
+            vals = frame.loc[name].dropna()
+            if len(vals):
+                return float(vals.iloc[0])
+    return None
+
+
+def _sec_shares_outstanding(ticker: str) -> float | None:
+    try:
+        cik = _cik(ticker)
+        facts = _sec_get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{cik:010d}.json").json()
+        rows = facts["facts"]["dei"]["EntityCommonStockSharesOutstanding"]["units"]["shares"]
+        return float(max(rows, key=lambda r: (r["end"], r.get("filed", "")))["val"])
+    except Exception:
+        return None
+
+
+def computed_snapshot(ticker: str) -> dict:
+    """Valuation snapshot computed from data that still works when Yahoo's quote summary is blocked:
+    price history, quarterly statements (Yahoo) and shares outstanding / company name (SEC)."""
+    t = yf.Ticker(ticker)
+    out: dict = {"ticker": ticker.upper(), "data_note": "computed from price history, last 4 quarterly "
+                 "statements and SEC share count (Yahoo quote summary unavailable); forward P/E and "
+                 "analyst data not available - use web search for consensus"}
+    try:
+        sub = _sec_get(f"https://data.sec.gov/submissions/CIK{_cik(ticker):010d}.json").json()
+        out["name"], out["industry"] = sub.get("name"), sub.get("sicDescription")
+        out["exchange"] = ", ".join(sub.get("exchanges") or [])
+    except Exception:
+        pass
+    hist = t.history(period="1y", auto_adjust=False)
+    if hist is None or hist.empty:
+        raise ValueError(f"No price data for {ticker}.")
+    price = float(hist["Close"].iloc[-1])
+    out.update(price=round(price, 2), price_date=hist.index[-1].strftime("%Y-%m-%d"),
+               **{"52w_low": round(float(hist["Low"].min()), 2), "52w_high": round(float(hist["High"].max()), 2)})
+
+    inc, bal = t.quarterly_income_stmt, t.quarterly_balance_sheet
+    rev = _row(inc, ["Total Revenue", "Operating Revenue"])
+    ni = _row(inc, ["Net Income", "Net Income Common Stockholders"])
+    eps = _row(inc, ["Diluted EPS"])
+    gp = _row(inc, ["Gross Profit"])
+    op = _row(inc, ["Operating Income"])
+    ebitda = _row(inc, ["EBITDA", "Normalized EBITDA"])
+    shares = _sec_shares_outstanding(ticker) or _latest(inc, ["Diluted Average Shares"])
+    cash = _latest(bal, ["Cash Cash Equivalents And Short Term Investments", "Cash And Cash Equivalents"])
+    debt = _latest(bal, ["Total Debt"])
+    equity = _latest(bal, ["Stockholders Equity"])
+
+    if eps is None and ni is not None and shares:
+        eps = ni / shares  # some quarters lack a diluted EPS row
+    mcap = price * shares if shares else None
+    ev = mcap + (debt or 0) - (cash or 0) if mcap else None
+    yoy = None
+    if inc is not None and not inc.empty and "Total Revenue" in inc.index:
+        q = inc.loc["Total Revenue"].dropna()
+        if len(q) >= 5 and q.iloc[4]:
+            yoy = float(q.iloc[0] / q.iloc[4] - 1)
+
+    def ratio(a, b):
+        return round(a / b, 1) if a and b and b > 0 else None
+
+    out.update(_clean({
+        "market_cap": _fmt_num(mcap), "enterprise_value": _fmt_num(ev),
+        "trailing_pe_ttm": ratio(price, eps), "price_to_sales": ratio(mcap, rev), "ev_to_ebitda": ratio(ev, ebitda),
+        "price_to_book": ratio(mcap, equity), "revenue_ttm": _fmt_num(rev),
+        "revenue_growth_yoy_latest_quarter": _pct(yoy),
+        "gross_margin_ttm": _pct(gp / rev if gp and rev else None),
+        "operating_margin_ttm": _pct(op / rev if op is not None and rev else None),
+        "profit_margin_ttm": _pct(ni / rev if ni is not None and rev else None),
+        "return_on_equity_ttm": _pct(ni / equity if ni is not None and equity else None),
+        "total_cash": _fmt_num(cash), "total_debt": _fmt_num(debt), "_mcap": mcap, "_rev": rev,
+    }))
+    return out
+
+
 def get_company_profile(ticker: str) -> str:
     """Snapshot: description, price, valuation multiples, margins, analyst view."""
-    info = yf.Ticker(ticker).info or {}
-    if not info.get("longName") and not info.get("shortName"):
-        raise ValueError(f"No Yahoo Finance data found for ticker '{ticker}'.")
+    info = _yahoo_info(ticker)
+    if not info:
+        snap = computed_snapshot(ticker)
+        return json.dumps({k: v for k, v in snap.items() if not k.startswith("_")}, indent=1, default=str)
 
     summary = info.get("longBusinessSummary") or ""
     profile = _clean({
@@ -190,11 +293,22 @@ def get_price_performance(ticker: str) -> str:
 def compare_peers(tickers: list[str]) -> str:
     """Side-by-side valuation and profitability table for a list of tickers."""
     rows = {}
+    fallback_used = False
     for tk in tickers[:8]:
-        try:
-            info = yf.Ticker(tk).info or {}
-        except Exception as exc:  # one bad ticker shouldn't sink the table
-            rows[tk.upper()] = {"error": str(exc)[:80]}
+        info = _yahoo_info(tk)
+        if not info:
+            try:
+                snap = computed_snapshot(tk)
+            except Exception as exc:  # one bad ticker shouldn't sink the table
+                rows[tk.upper()] = {"error": str(exc)[:80]}
+                continue
+            fallback_used = True
+            rows[tk.upper()] = {
+                "mkt_cap": snap.get("market_cap"), "fwd_pe": None, "ttm_pe": snap.get("trailing_pe_ttm"),
+                "ev_ebitda": snap.get("ev_to_ebitda"), "p_sales": snap.get("price_to_sales"),
+                "rev_growth": snap.get("revenue_growth_yoy_latest_quarter"), "gross_mgn": snap.get("gross_margin_ttm"),
+                "op_mgn": snap.get("operating_margin_ttm"), "roe": snap.get("return_on_equity_ttm"),
+            }
             continue
         rows[tk.upper()] = {
             "mkt_cap": _fmt_num(info.get("marketCap")),
@@ -207,7 +321,11 @@ def compare_peers(tickers: list[str]) -> str:
             "op_mgn": _pct(info.get("operatingMargins")),
             "roe": _pct(info.get("returnOnEquity")),
         }
-    return pd.DataFrame(rows).T.fillna("n/a").to_string()
+    table = pd.DataFrame(rows).T.fillna("n/a").to_string()
+    if fallback_used:
+        table += ("\n(Some rows computed from price history, quarterly statements and SEC share counts because "
+                  "Yahoo's quote summary was unavailable; forward P/E not available for those rows.)")
+    return table
 
 
 def _round(v, nd=1):
@@ -387,5 +505,7 @@ def get_analyst_estimates(ticker: str) -> str:
     except Exception:
         pass
     if len(parts) == 1:
-        raise ValueError(f"No analyst estimates available for {ticker}.")
+        raise ValueError(f"No analyst estimates available for {ticker} from Yahoo Finance right now. "
+                         "Use web search for the consensus (EPS/revenue estimates and price targets) instead, "
+                         "and cite the source.")
     return "\n".join(parts)

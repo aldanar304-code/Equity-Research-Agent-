@@ -193,6 +193,15 @@ if st.query_params.get("diag") == "1":
     except Exception as exc:
         st.error(f"Secrets could not be read: {type(exc).__name__}. Check the format: "
                  'ANTHROPIC_API_KEY = "sk-ant-..." (straight quotes, one line).')
+    # Data-source check (no AI cost): is Yahoo's quote summary reachable, and does the fallback work?
+    from equity_agent.data import _yahoo_info, computed_snapshot
+    yahoo_ok = bool(_yahoo_info("AAPL"))
+    try:
+        snap = computed_snapshot("AAPL")
+        fallback = f"works (AAPL market cap {snap.get('market_cap')}, P/E {snap.get('trailing_pe_ttm')})"
+    except Exception as exc:
+        fallback = f"failed: {type(exc).__name__}: {str(exc)[:80]}"
+    st.info(f"Yahoo quote summary reachable from this server: {yahoo_ok}. Computed fallback: {fallback}.")
 
 with st.sidebar:
     st.markdown(
