@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agente de análisis bursátil con IA - Memoria del proyecto - Renzo Aldana</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 16mm 15mm; }
+  :root { --ink:#111827; --muted:#6b7280; --line:#e5e7eb; --accent:#1d4ed8; --soft:#f8fafc; --navy:#1f3a5f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); font: 10pt/1.47 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .page-break { break-before: page; }
+  .kicker { font-size: 8.5pt; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: 23pt; line-height: 1.15; margin: 4px 0 4px; color: var(--navy); }
+  .subtitle { font-size: 12pt; color: #374151; margin: 0 0 10px; }
+  .byline { font-size: 9.5pt; color: var(--muted); margin-bottom: 14px; }
+  .byline a { color: var(--accent); text-decoration: none; }
+  h2 { font-size: 14pt; color: var(--navy); margin: 22px 0 8px; padding-top: 8px; border-top: 2px solid var(--navy); break-after: avoid; }
+  h3 { font-size: 11pt; margin: 14px 0 4px; break-after: avoid; }
+  p { margin: 0 0 8px; }
+  ul, ol { margin: 0 0 8px; padding-left: 18px; }
+  li { margin: 0 0 3px; }
+  a { color: var(--accent); }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 14px; }
+  .kpi { background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .kpi .v { font-size: 15pt; font-weight: 700; color: var(--accent); line-height: 1.2; }
+  .kpi .l { font-size: 8.3pt; color: var(--muted); }
+  .box { background: var(--soft); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; padding: 9px 12px; margin: 10px 0; break-inside: avoid; }
+  .quote { background: #fffbeb; border: 1px solid #fde68a; border-left: 4px solid #d97706; border-radius: 6px; padding: 9px 12px; margin: 10px 0; break-inside: avoid; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 9.4pt; break-inside: avoid; }
+  th { text-align: left; background: var(--soft); font-weight: 600; }
+  th, td { border-bottom: 1px solid var(--line); padding: 5px 7px; vertical-align: top; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 10px 0 12px; break-inside: avoid; }
+  .step { border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: #fff; }
+  .step b { display: block; color: var(--accent); font-size: 9.5pt; }
+  .step span { font-size: 8.6pt; color: #374151; }
+  .step em { display: block; font-style: normal; font-size: 8pt; color: var(--muted); margin-top: 4px; }
+  figure { margin: 10px 0; text-align: center; break-inside: avoid; }
+  figure img { width: 78%; border: 1px solid var(--line); border-radius: 6px; }
+  figcaption { font-size: 8.5pt; color: var(--muted); margin-top: 4px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 9pt; }
+  .copy { background: #fff; border: 1px dashed #9ca3af; border-radius: 6px; padding: 9px 12px; margin: 8px 0; font-size: 9.6pt; break-inside: avoid; }
+  .tag { display: inline-block; background: #eef2ff; color: #3730a3; border-radius: 999px; padding: 1px 8px; font-size: 8.5pt; margin: 2px 3px 2px 0; }
+  footer { margin-top: 18px; font-size: 8.5pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 6px; }
+</style>
+</head>
+<body>
+<!-- ============================ PÁGINA 1: RESUMEN DEL PROYECTO ============================ -->
+<div class="kicker">Memoria del proyecto &middot; Proyecto de portafolio</div>
+<h1>Agente de análisis bursátil con IA</h1>
+<p class="subtitle">Un agente de inteligencia artificial autónomo que lee los informes de una empresa ante la SEC, la analiza como un analista de inversión, verifica su propio trabajo y redacta un informe de inversión con formato profesional, en inglés y en español.</p>
+<div class="byline"><b>Renzo Aldana</b> &middot; Barcelona, España &middot; Octubre de 2026<br>
+Demo en vivo: <a href="https://renzo-equity-research.streamlit.app/">renzo-equity-research.streamlit.app</a> &middot;
+Código: <a href="https://github.com/aldanar304-code/Equity-Research-Agent-">github.com/aldanar304-code/Equity-Research-Agent-</a></div>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">~30</div><div class="l">informes de la SEC descargados por empresa</div></div>
+  <div class="kpi"><div class="v">~20</div><div class="l">pasos de investigación (llamadas a herramientas) por informe</div></div>
+  <div class="kpi"><div class="v">$0.41–0.52</div><div class="l">coste de IA por informe, unos 4 minutos</div></div>
+  <div class="kpi"><div class="v">54</div><div class="l">autocorrecciones de la verificación en 4 informes</div></div>
+</div>
+
+<h3>El proyecto en un párrafo</h3>
+<p>A partir del símbolo bursátil de una empresa, el agente descarga de la SEC sus informes anuales y trimestrales más recientes, sus comunicados de resultados, su informe de gobierno corporativo y las operaciones de sus directivos (unas 1.000 páginas), y decide por sí mismo qué investigar: 10 años de datos financieros, competidores, expectativas de los analistas, riesgos, retribución de la dirección y noticias recientes. Valora la empresa mediante un descuento de flujos de caja (DCF) en escenarios pesimista, base y optimista, emite una recomendación de Comprar / Mantener / Vender con un precio objetivo a 12 meses y explica en qué discrepa de Wall Street. Después <b>vuelve a comprobar su borrador contra las fuentes y corrige sus propios errores</b>, antes de generar un PDF con seis gráficos e información legal al estilo de la normativa europea.</p>
+
+<h3>Resultados</h3>
+<table>
+  <tr><th>Empresa</th><th>Recomendación</th><th class="n">Precio objetivo 12 meses</th><th class="n">Llamadas a herramientas</th><th class="n">Coste</th><th class="n">Autocorrecciones</th></tr>
+  <tr><td>NVIDIA (NVDA)</td><td>Mantener</td><td class="n">$255 (+9%)</td><td class="n">19</td><td class="n">$0.43</td><td class="n">13</td></tr>
+  <tr><td>Microsoft (MSFT)</td><td>Mantener</td><td class="n">$530 (+2%)</td><td class="n">23</td><td class="n">$0.52</td><td class="n">17</td></tr>
+  <tr><td>Amazon (AMZN)</td><td>Mantener</td><td class="n">$255 (+1%)</td><td class="n">23</td><td class="n">$0.49</td><td class="n">10</td></tr>
+  <tr><td>Apple (AAPL)</td><td>Vender</td><td class="n">$290 (−13%)</td><td class="n">19</td><td class="n">$0.41</td><td class="n">14</td></tr>
+</table>
+<p class="small muted">Cada informe tiene además una versión en español (unos $0.13 cada una). Una comprobación automática confirmó que ninguna cifra financiera cambió en ninguna de las cuatro traducciones.</p>
+
+<h3>Lo que demuestra</h3>
+<div class="two small">
+  <div><b>Finanzas</b><br>Valoración por DCF y análisis de sensibilidad &middot; escenarios pesimista/base/optimista &middot; múltiplos de comparables (PER, EV/EBITDA) &middot; calidad de los beneficios &middot; lectura de informes 10-K, 10-Q, 8-K y de gobierno corporativo &middot; percepción diferencial frente al consenso</div>
+  <div><b>Tecnología</b><br>Agentes de IA y uso de herramientas (API de Claude) &middot; Python &middot; datos de SEC EDGAR y XBRL &middot; búsqueda en documentos (BM25) &middot; pruebas automatizadas &middot; visualización de datos &middot; publicación de aplicaciones web (Streamlit)</div>
+</div>
+<div class="small" style="margin-top:6px"><b>IA responsable y regulación:</b> autoverificación, control de costes, aviso de contenido generado por IA e información legal según las normas europeas MAR y MiFID II, incluida la posición del propio autor.</div>
+
+<!-- ============================ MEMORIA ============================ -->
+<div class="page-break"></div>
+<h2>1. El problema</h2>
+<p>El análisis bursátil profesional es lento y caro. Antes de formarse una opinión sobre una empresa, un analista lee cientos de páginas de informes, reconstruye su historial financiero de varios años, compara competidores, revisa lo que ya espera el mercado y construye un modelo de valoración. Para una sola empresa, son días de trabajo.</p>
+<p>Los asistentes de IA generalistas parecen un atajo, pero tienen tres debilidades que los hacen insuficientes por sí solos:</p>
+<ol>
+  <li><b>No conocen los datos actuales.</b> Responden con lo que aprendieron en su entrenamiento, no con los informes y precios de hoy.</li>
+  <li><b>Cometen errores aritméticos.</b> Los modelos de lenguaje predicen texto; no calculan.</li>
+  <li><b>Pueden afirmar con seguridad cosas sin fundamento</b>, sin fuentes y sin forma de comprobarlas.</li>
+</ol>
+<p><b>Objetivo del proyecto:</b> construir un sistema de IA que haga el trabajo de base del analista con datos reales y citados, que mantenga cada cifra verificable, que cueste menos de un dólar por empresa y que produzca un informe con el formato que usaría un fondo de inversión.</p>
+
+<h2>2. Cómo funciona</h2>
+<p>La idea clave: <b>la IA es el cerebro y las herramientas son sus manos.</b> Claude, el modelo de IA, planifica la investigación y redacta. Pequeñas funciones de Python fiables (las "herramientas") obtienen datos, buscan en documentos y hacen los cálculos. Como la IA actúa (consulta y comprueba la información) en lugar de responder de memoria, el sistema es un <b>agente</b> y no un chatbot.</p>
+
+<div class="flow">
+  <div class="step"><b>1 · Descargar</b><span>~30 informes de la SEC guardados en local</span><em>gratis · ~25 s</em></div>
+  <div class="step"><b>2 · Investigar</b><span>Claude usa ~20 herramientas: finanzas, comparables, búsqueda en informes, DCF, noticias</span><em>~3 min · ~$0.30</em></div>
+  <div class="step"><b>3 · Redactar</b><span>Informe con una plantilla fija de 10 secciones</span><em>incluido arriba</em></div>
+  <div class="step"><b>4 · Verificar</b><span>Comprueba cada cifra contra las fuentes y corrige</span><em>~$0.10</em></div>
+  <div class="step"><b>5 · Presentar</b><span>PDF y página web, 6 gráficos, información legal, español</span><em>gratis</em></div>
+</div>
+
+<h3>El equipo (un archivo por función)</h3>
+<table>
+  <tr><th>Archivo</th><th>Función</th><th>Qué hace</th></tr>
+  <tr><td>filings.py</td><td>El bibliotecario</td><td>Descarga los informes de la SEC, busca en ellos, construye el historial de 10 años con los datos XBRL de la SEC, resume las operaciones de los directivos y calcula el DCF</td></tr>
+  <tr><td>data.py</td><td>Asistente de datos de mercado</td><td>Precios, múltiplos, estados trimestrales, consenso de analistas y comparables de Yahoo Finance</td></tr>
+  <tr><td>tools.py</td><td>Centralita</td><td>El menú de herramientas que Claude puede usar; dirige cada petición a la función correcta</td></tr>
+  <tr><td>prompts.py</td><td>Descripción del puesto</td><td>Las instrucciones del analista y la plantilla del informe ("nunca inventes cifras, cita cada dato…")</td></tr>
+  <tr><td>agent.py</td><td>Director</td><td>Gestiona la conversación con Claude, ejecuta las herramientas, controla el presupuesto y lanza la verificación</td></tr>
+  <tr><td>render.py / translate.py</td><td>Diseñador / traductor</td><td>Gráficos, PDF e información legal; traducción al español con comprobación de cifras</td></tr>
+  <tr><td>app.py / cli.py</td><td>Escaparate / puerta de entrada</td><td>La demo web pública y el comando (o el lanzador de doble clic) que inicia un informe</td></tr>
+</table>
+<p class="small">Solo un archivo, agent.py, se comunica con la IA. Todo lo que debe ser fiable (descargar, calcular, dar formato) es código normal.</p>
+
+<h2>3. Decisiones de diseño clave</h2>
+<div class="box"><b>Buscar en lugar de leerlo todo.</b> Los informes de una empresa suman unos 3 millones de caracteres, aproximadamente 1.000 páginas. Pasárselo todo a la IA costaría varios dólares por informe, y la mayor parte es texto repetitivo. En su lugar, el agente busca en los informes, como quien usa el índice de un libro o Ctrl+F, y lee solo los fragmentos relevantes. Así cada informe cuesta unos $0.45.</div>
+<div class="box"><b>Los cálculos los hace el código, no la IA.</b> Claude elige los supuestos (crecimiento, tasa de descuento) y explica por qué; Python calcula la valoración con exactitud. Esto resultó importante: en el informe de Apple, la verificación detectó que Claude había escrito que 28 × $9.40 ≈ $290, cuando el resultado es $263.</div>
+<div class="box"><b>Una segunda revisión que verifica la primera.</b> Tras el borrador, el agente relee su informe, comprueba cada cifra contra los resultados de las herramientas, corrige errores, identifica las opiniones como tales y enumera cada cambio en las "Notas de verificación". En cuatro informes hizo 54 correcciones.</div>
+<div class="box"><b>Control estricto de costes.</b> Los informes se descargan con código normal (gratis). La caché de instrucciones abarata la relectura de la conversación, y un límite fijo ($1.50 por informe) reserva el 30% del presupuesto para la verificación.</div>
+<div class="box"><b>Una demo pública segura.</b> La web muestra informes de ejemplo de forma gratuita. Para generar análisis nuevos, cada visitante usa su propia clave de API, así que un enlace público nunca genera costes para el autor.</div>
+
+<h2>4. Las finanzas detrás de cada informe</h2>
+<h3>Descuento de flujos de caja (DCF)</h3>
+<p>Una empresa vale todo el dinero que generará en el futuro, traducido a dinero de hoy. El agente parte del flujo de caja libre (el dinero generado menos la inversión en equipos e instalaciones), lo proyecta año a año durante 8–10 años, añade un valor terminal para los años siguientes, lo descuenta todo a hoy con una tasa del 8–11%, ajusta por caja y deuda, y lo divide entre el número de acciones. Un ejemplo sencillo: un negocio que genera €100 al año para siempre vale €100 ÷ 10% = €1.000 para un inversor que exige un 10%, pero solo €500 para uno que exige un 20%. <b>Cuanto mayor es la rentabilidad exigida, menor es el valor.</b></p>
+
+<h3>Escenarios y sensibilidad</h3>
+<p>Como el futuro es incierto, el DCF se calcula tres veces. Para NVIDIA (precio $234):</p>
+<table>
+  <tr><th>Escenario</th><th>Supuesto</th><th class="n">Valor por acción</th><th class="n">vs precio</th></tr>
+  <tr><td>Pesimista</td><td>El gasto en IA se frena y el flujo de caja cae</td><td class="n">$69</td><td class="n">−71%</td></tr>
+  <tr><td>Base</td><td>Fuerte crecimiento que se modera poco a poco</td><td class="n">$229</td><td class="n">−2%</td></tr>
+  <tr><td>Optimista</td><td>Crecimiento muy fuerte durante más tiempo</td><td class="n">$390</td><td class="n">+67%</td></tr>
+</table>
+<p>Un mapa de sensibilidad muestra cuánto varía el valor con los supuestos: de <b>$166</b> con una tasa de descuento del 12% a <b>$384</b> con un 8%. Una sola cifra nunca es suficiente.</p>
+
+<figure><img src="dcf-excerpt.png" alt="Extracto del informe de NVIDIA: valor DCF por escenario y mapa de sensibilidad"><figcaption>Del informe del agente sobre NVIDIA: valor DCF por escenario frente al precio actual (arriba) y mapa de sensibilidad (abajo; verde = por encima del precio, rojo = por debajo).</figcaption></figure>
+
+<h3>Múltiplos de valoración</h3>
+<p>Igual que se valora un piso por su precio por metro cuadrado, los múltiplos comparan el precio con los beneficios y con empresas similares. El agente elige por sí mismo entre 3 y 6 competidores reales. En el informe de NVIDIA, NVIDIA tenía el PER estimado <b>más bajo</b> (14,9× frente a 18,3× de Broadcom y 40,7× de AMD) pese a tener el crecimiento <b>más rápido</b> (+106%). Es una señal de que o bien está barata, o bien el mercado espera que sus beneficios caigan más adelante, y el informe analiza cuál de las dos.</p>
+
+<h3>Calidad de los beneficios: ¿el beneficio es real y repetible?</h3>
+<table>
+  <tr><th>Señal de alerta</th><th>Lo que encontró el agente</th></tr>
+  <tr><td>Ganancias extraordinarias</td><td><b>Amazon:</b> el beneficio de $62.6B del 2T incluía $53.4B de ganancias por su participación en Anthropic, así que el negocio en sí ganó mucho menos.</td></tr>
+  <tr><td>Beneficio sin caja</td><td><b>NVIDIA:</b> $59.7B de beneficio neto, pero solo $24.1B de caja operativa en el 2T, porque los clientes tardaban más en pagar.</td></tr>
+  <tr><td>Inversión que absorbe la caja</td><td><b>Microsoft:</b> beneficios récord, pero el flujo de caja libre cayó dos años seguidos al alcanzar la inversión en centros de datos los $116B.</td></tr>
+</table>
+
+<h3>Percepción diferencial: dónde discrepa del mercado</h3>
+<p>No basta con acertar; un inversor tiene que acertar en algo que el mercado está valorando mal. Cada informe compara su opinión con el consenso de analistas. <b>Amazon:</b> 57 de 59 analistas recomiendan Comprar, con un precio objetivo medio de $331 (+31%). El agente recomendó <b>Mantener con objetivo de $255</b>, porque el consenso de beneficios había subido un 48% en 90 días en gran parte por ganancias extraordinarias de inversiones, mientras el flujo de caja libre era negativo y la deuda crecía. <b>Apple</b> fue la única recomendación de <b>Vender</b>: con un PER estimado de 34,8×, ninguno de los escenarios DCF del agente alcanzaba el precio actual, y su margen récord del trimestre de junio estaba inflado por reembolsos arancelarios puntuales.</p>
+
+<h2>5. La prueba de que funciona: la verificación en acción</h2>
+<p>La autoverificación es lo que más diferencia este proyecto de un chatbot. Correcciones reales de los cuatro informes:</p>
+<table>
+  <tr><th>Informe</th><th>Lo que el agente detectó en su propio borrador</th></tr>
+  <tr><td>Apple</td><td>Error aritmético en el precio objetivo (28 × $9.40 es $263, no $290). Rehízo el objetivo para que cuadrara con la sección de valoración.</td></tr>
+  <tr><td>Amazon</td><td>Un ratio de deuda de 3,5× inflado por $16B de ganancias extraordinarias, corregido a un ~4,8× más realista. También reformuló un caso de la FTC descrito como "resuelto y pagado", ya que el informe solo decía que Amazon esperaba pagar.</td></tr>
+  <tr><td>Microsoft</td><td>Crecimiento de ingresos mal calculado como 15,0% (correcto: 15,7%), y una cifra que una fuente web atribuía al trimestre equivocado.</td></tr>
+  <tr><td>NVIDIA</td><td>Citaba un informe anual que en realidad no había leído. Sustituyó la cita por los documentos que sí usó y lo eliminó de su lista de documentos revisados.</td></tr>
+</table>
+
+<h2>6. Problemas reales resueltos por el camino</h2>
+<ul>
+  <li><b>Las empresas cambian las etiquetas de sus datos.</b> NVIDIA cambió en 2023 la etiqueta que usa para los ingresos en sus datos de la SEC, y registra la inversión en capital con una etiqueta distinta a la de la mayoría de empresas. Al principio eso produjo ingresos vacíos y un flujo de caja libre sobrestimado. La solución combina todas las etiquetas alternativas; el flujo de caja libre de NVIDIA del ejercicio 2026 coincide ahora con sus estados financieros ($96.7B).</li>
+  <li><b>Documentos desordenados.</b> Los informes dividen los títulos entre etiquetas HTML ("RIS K FACTORS"), repiten cada título en el índice y mencionan secciones dentro del texto. El buscador de secciones resuelve los tres casos.</li>
+  <li><b>Nombres de archivo inconsistentes.</b> Los comunicados de resultados no siempre se llaman "ex99"; NVIDIA usa "q2fy27pr.htm". El descargador identifica los anexos por lo que son, no por su nombre.</li>
+  <li><b>Seguridad en la traducción.</b> Al principio, la comprobación de cifras marcaba cambios inofensivos ("Q2" pasaba a ser "segundo trimestre"), así que se ajustó para centrarse en las cifras financieras reales. Tras detectar un error de traducción en los gráficos, una prueba verifica ahora todos los gráficos en ambos idiomas.</li>
+</ul>
+<p>Cada corrección está respaldada por una prueba automática (14 en total), para que los problemas no puedan volver sin que nadie se dé cuenta.</p>
+
+<h2>7. Uso responsable y regulación</h2>
+<p>Los informes están redactados como <b>análisis general e impersonal</b>, no como asesoramiento de inversión personalizado, que según la normativa europea (MiFID II) requeriría autorización de la CNMV. Como los informes incluyen recomendaciones de Comprar / Mantener / Vender, siguen las reglas de información del Reglamento europeo sobre abuso de mercado (MAR) para recomendaciones de inversión. Cada informe indica que ha sido generado por IA, cuándo se elaboró y con qué precio, su metodología, las posiciones del propio autor (tengo acciones de NVIDIA, y así consta en el informe de NVIDIA) y que no constituye asesoramiento de inversión.</p>
+
+<h2>8. Limitaciones y próximos pasos</h2>
+<div class="two small">
+  <div><b>Limitaciones</b>
+    <ul>
+      <li>Solo cubre empresas cotizadas en EE. UU. (informes de la SEC).</li>
+      <li>Los datos de Yahoo Finance no son oficiales y a veces no coinciden con los informes; el agente señala las discrepancias que encuentra.</li>
+      <li>La verificación reduce los errores, pero no puede garantizar que no haya ninguno.</li>
+      <li>El BPA de años antiguos no se ajusta por desdoblamientos de acciones posteriores.</li>
+    </ul></div>
+  <div><b>Próximos pasos</b>
+    <ul>
+      <li><b>Historial público de aciertos:</b> evaluar cada recomendación a los 3, 6 y 12 meses, incluidos los fallos.</li>
+      <li><b>Modo en lenguaje sencillo</b> para inversores principiantes.</li>
+      <li><b>"Pregunta al informe":</b> respuestas extraídas de los informes, con citas.</li>
+      <li>Cobertura de empresas europeas.</li>
+    </ul></div>
+</div>
+
+<h2>9. Cómo se construyó</h2>
+<p>Diseñé el producto y tomé las decisiones clave: el alcance, el formato del informe, los límites de coste, la verificación, la versión en español, la información legal y el modelo de demo pública. Lo construí con un asistente de programación con IA (Claude Code), lo probé con empresas reales y revisé los resultados, incluida la comprobación de cifras contra los informes originales. El gasto total en IA de todo el proyecto, incluidos todos los informes de ejemplo y sus traducciones, fue de unos $3.</p>
+<p><span class="tag">Python</span><span class="tag">API de Claude (uso de herramientas)</span><span class="tag">SEC EDGAR</span><span class="tag">XBRL</span><span class="tag">Yahoo Finance</span><span class="tag">Búsqueda BM25</span><span class="tag">matplotlib</span><span class="tag">Streamlit</span><span class="tag">pytest</span><span class="tag">GitHub</span></p>
+
+<!-- ============================ ANEXO ============================ -->
+<div class="page-break"></div>
+<h2>Anexo: textos listos para usar</h2>
+<h3>CV: sección de proyectos</h3>
+<div class="copy"><b>Agente de análisis bursátil con IA</b> &middot; Python, API de Claude &middot; renzo-equity-research.streamlit.app<br>
+• Desarrollé un agente de IA autónomo que descarga los informes de una empresa ante la SEC y redacta un informe de inversión con formato profesional: análisis financiero de 10 años, comparación con competidores, operaciones de directivos, consenso de analistas y valoración por DCF, entregado en PDF con gráficos.<br>
+• Diseñé una fase de autoverificación que hizo 54 correcciones en cuatro informes (NVIDIA, Microsoft, Amazon, Apple), además de una traducción al español con una comprobación automática de que todas las cifras coinciden.<br>
+• Mantuve el coste en unos $0.45 por informe gracias al procesamiento local de datos, la búsqueda en documentos y límites de gasto estrictos; añadí información legal según MiFID II y MAR para publicar análisis de forma responsable.</div>
+
+<h3>LinkedIn: sección de proyectos</h3>
+<div class="copy"><b>Título:</b> Agente de análisis bursátil con IA<br>
+<b>Descripción:</b> Un agente de IA que hace el trabajo de base de un analista bursátil. A partir del símbolo de una empresa, descarga sus informes ante la SEC (unas 1.000 páginas), investiga 10 años de datos financieros, competidores, expectativas de los analistas, riesgos y retribución de la dirección, valora la empresa con un DCF en escenarios pesimista, base y optimista, y redacta un informe de inversión con una recomendación de Comprar/Mantener/Vender, en inglés o en español. Una segunda revisión verifica el borrador contra sus fuentes; en cuatro informes hizo 54 autocorrecciones. Unos $0.45 y 4 minutos por informe. Desarrollado con Python y la API de Claude.<br>
+<b>Enlaces:</b> demo en vivo y repositorio de GitHub.</div>
+
+<h3>LinkedIn: publicación</h3>
+<div class="copy">He creado un agente de IA para análisis bursátil. 📈<br><br>
+Le das el símbolo de una empresa y descarga sus informes ante la SEC, analiza 10 años de datos financieros, la compara con sus competidores, revisa las operaciones de sus directivos y las expectativas de los analistas, hace una valoración por DCF y redacta un informe de inversión, en inglés o en español.<br><br>
+Lo que más me gusta: después de escribir, se verifica a sí mismo. En Apple detectó que su propio cálculo del precio objetivo estaba mal; en Amazon se dio cuenta de que un ratio de deuda estaba inflado por ganancias extraordinarias. En cuatro informes hizo 54 correcciones a sus propios borradores.<br><br>
+Cada informe cuesta unos $0.45. Informes de ejemplo (NVIDIA, Microsoft, Amazon, Apple): renzo-equity-research.streamlit.app<br>
+Código: github.com/aldanar304-code/Equity-Research-Agent-<br><br>
+Hecho con Python y Claude. Proyecto educativo; no constituye asesoramiento de inversión.</div>
+
+<footer>Agente de análisis bursátil con IA &middot; Memoria del proyecto &middot; Renzo Aldana &middot; Octubre de 2026. Los informes mencionados son análisis educativos generados por un agente de IA y no constituyen asesoramiento de inversión.</footer>
+
+</body>
+</html>
