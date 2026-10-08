@@ -57,7 +57,7 @@ _ES = {
     "Base-case DCF sensitivity (value per share)": "Sensibilidad del DCF, escenario base (valor por acción)",
     "Green = above the current price, red = below. Centre cell is the base case.":
         "Verde = por encima del precio actual, rojo = por debajo. La celda central es el escenario base.",
-    "AI Equity Research Agent &middot; Investment memo": "Agente de análisis bursátil con IA &middot; Informe de inversión",
+    "AI Equity Research Agent &middot; Investment memo": "Agente de equity research con IA &middot; Informe de inversión",
     "Generated": "Generado",
 }
 
