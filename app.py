@@ -183,6 +183,17 @@ st.caption(
     "and writes an investment memo. Educational project, not investment advice."
 )
 
+if st.query_params.get("diag") == "1":
+    # Owner diagnostics: shows only whether secrets parse and which names exist - never any values.
+    try:
+        names = sorted(st.secrets.keys())
+        st.info(f"Secrets file read OK. Names found: {names or 'none'}. "
+                f"Free tries enabled: {bool(OWNER_KEY)}. "
+                f"Key looks like an Anthropic key: {bool(OWNER_KEY and OWNER_KEY.startswith('sk-ant-'))}.")
+    except Exception as exc:
+        st.error(f"Secrets could not be read: {type(exc).__name__}. Check the format: "
+                 'ANTHROPIC_API_KEY = "sk-ant-..." (straight quotes, one line).')
+
 with st.sidebar:
     st.markdown(
         "**How it works**\n"
